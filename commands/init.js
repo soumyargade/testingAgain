@@ -44,16 +44,16 @@ exports.handler = async (argv) => {
       console.log(envOutput);
 
       // write variables to .env file
-      fs.writeFileSync("../.env", envOutput, (err) => {
+      fs.writeFileSync("../.store", envOutput, (err) => {
         if (err) {
           console.error(
-            chalk.red("Error writing environmental variables to .env file!")
+            chalk.red("Error writing environmental variables to storage file!")
           );
           console.error(chalk.red(err));
         }
       });
     } catch {
-      console.log(chalk.red("Error obtaining environmental variables!"));
+      console.log(chalk.red("Error obtaining vm details from bakerx!"));
     }
 
     //TODO: Add tools to build server
