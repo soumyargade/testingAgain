@@ -53,11 +53,10 @@ exports.handler = async (argv) => {
         console.error(error);
     }
 
-    try {
-        
+    try {        
         await ssh(`sudo add-apt-repository ppa:ansible/ansible`, json);
-        await ssh(`sudo apt update -y`, json);
-        await ssh(`sudo apt install ansible -y`, json);
+        await ssh(`sudo apt-get update -y`, json);
+        await ssh(`sudo apt-get install ansible -y`, json);
         await ssh(`sudo ansible-galaxy collection install community.docker`, json);
     } catch (error) {
         console.error(error);
