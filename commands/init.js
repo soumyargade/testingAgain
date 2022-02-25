@@ -54,8 +54,9 @@ exports.handler = async (argv) => {
 
     async function ssh(cmd, sshExe) {
         return new Promise(function (resolve, reject) { 
-            console.log( chalk.yellow(`${sshExe} ${cmd}`) );
-            cp.exec(`${sshExe} ${cmd}`, (error, stdout, stderr) => {
+            const full_cmd = `${sshExe} "${cmd}"`;
+            console.log( chalk.yellow(full_cmd) );
+            cp.exec(full_cmd, (error, stdout, stderr) => {
     
                 console.log(error || stderr);
                 console.log(stdout);
@@ -67,8 +68,8 @@ exports.handler = async (argv) => {
 
     try {
         let sshCmd = `ssh ${json.user}@${json.hostname} -i "${json.private_key}" -p ${json.port} -o StrictHostKeyChecking=no`;
-        await ssh(`sudo apt update -y`, sshCmd);
-        await ssh(`sudo apt install ansible -y`, sshCmd);
+        await ssh(`sudo apt-get update -y`, sshCmd);
+        await ssh(`sudo apt-get install ansible -y`, sshCmd);
     } catch (error) {
         console.error(error);
         process.exit(1);
