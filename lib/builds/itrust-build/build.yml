@@ -1,0 +1,85 @@
+---
+- hosts: localhost
+  become: yes
+  vars:
+          packages:
+                  - ca-certificates
+                  - curl
+                  - gnupg
+                  - lsb-release
+                  - python3-pip
+  vars_files:
+  - ../../../.env
+
+  tasks:
+          - name: Install pre-reqs
+            apt: pkg={{item}} state=present update_cache=yes
+            with_items: "{{ packages }}"
+
+          - name: Add Docker GPG
+            apt_key:
+                    url: https://download.docker.com/linux/ubuntu/gpg
+                    state: present
+
+          - name: Add Docker Repo
+            apt_repository:
+                    repo: deb https://download.docker.com/linux/ubuntu focal stable
+
+          - name: Install Docker
+            apt:
+                    name: docker-ce
+                    update_cache: yes
+                    state: present
+
+          - name: Install Docker Module for Python
+            pip:
+                    name: docker
+
+          - name: Create container
+            docker_container:
+                    name: itrust
+                    image: ubuntu:focal
+                    command: ["sleep", "infinity"]
+
+          - name: Download MySQL
+            docker_container:
+                     name: mysql
+                     image: mysql:8.0
+                     env: MYSQL_ROOT_PASSWORD=rootpassword
+
+          - name: Install git
+            community.docker.docker_container_exec:
+                    container: itrust
+                    command: /bin/bash -c "apt-get update && apt-get install git -y"
+
+          - name: Check if itrust exists
+            stat:
+                    path: "/iTrust2-v10/iTrust2/src/main/resources/application.yml.template"
+            register: template
+
+          - name: Install itrust
+            community.docker.docker_container_exec:
+                    container: itrust
+                    command: /bin/bash -c "git clone https://{{ username }}:{{ password }}@github.ncsu.edu/engr-csc326-staff/iTrust2-v10.git"
+            when: template.stat.exists == False
+
+          - name: Rename yaml file
+            community.docker.docker_container_exec:
+                    container: itrust
+                    command: /bin/bash -c "mv /iTrust2-v10/iTrust2/src/main/resources/application.yml.template /iTrust2-v10/iTrust2/src/main/resources/application.yml"
+            when: template.stat.exists == False
+
+          - name: Check if password has been updated
+            lineinfile: 
+                     path: "/iTrust2-v10/iTrust2/src/main/resources/application.yml"
+                     search_string: '{{ root_password }}'
+                     state: absent
+            check_mode: yes
+            changed_when: false
+            register: password
+
+          - name: Configure application.yml file
+            community.docker.docker_container_exec:
+                    container: itrust
+                    command: /bin/bash -c "sed -i 's/password\:/password\:\ {{ root_password }}/g' /iTrust2-v10/iTrust2/src/main/resources/application.yml"  
+            when: not password.found                 

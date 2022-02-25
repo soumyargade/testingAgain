@@ -2,6 +2,7 @@ const chalk = require("chalk");
 const path = require("path");
 const cp = require("child_process");
 const waitssh = require('waitssh');
+const ssh = require('../lib/exec/ssh');
 
 exports.command = "init";
 exports.desc = "Prepare tool";
@@ -28,7 +29,7 @@ exports.handler = async (argv) => {
     // provision and start vm
     try {
       console.log(chalk.green("Configuring and starting vm with bakerx..."));
-      await cp.execSync("bakerx run m1 focal --memory 1024");
+      await cp.execSync("bakerx run m1 focal --memory 1024 --sync");
     } catch {
       console.log(chalk.red("Error starting vm with bakerx!"));
     }
@@ -65,11 +66,11 @@ exports.handler = async (argv) => {
             });
         });
     }
-
-    try {
-        let sshCmd = `ssh ${json.user}@${json.hostname} -i "${json.private_key}" -p ${json.port} -o StrictHostKeyChecking=no`;
-        await ssh(`sudo apt-get update -y`, sshCmd);
-        await ssh(`sudo apt-get install ansible -y`, sshCmd);
+    try {        
+        await ssh(`sudo add-apt-repository ppa:ansible/ansible`, json);
+        await ssh(`sudo apt-get update -y`, json);
+        await ssh(`sudo apt-get install ansible -y`, json);
+        await ssh(`sudo ansible-galaxy collection install community.docker`, json);
     } catch (error) {
         console.error(error);
         process.exit(1);
