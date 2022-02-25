@@ -53,19 +53,6 @@ exports.handler = async (argv) => {
         console.error(error);
     }
 
-    async function ssh(cmd, sshExe) {
-        return new Promise(function (resolve, reject) { 
-            const full_cmd = `${sshExe} "${cmd}"`;
-            console.log( chalk.yellow(full_cmd) );
-            cp.exec(full_cmd, (error, stdout, stderr) => {
-    
-                console.log(error || stderr);
-                console.log(stdout);
-                resolve()
-    
-            });
-        });
-    }
     try {        
         await ssh(`sudo add-apt-repository ppa:ansible/ansible`, json);
         await ssh(`sudo apt-get update -y`, json);
