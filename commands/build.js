@@ -19,6 +19,6 @@ exports.handler = async argv => {
     var obj = await cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
 
-    await ssh(`sudo ansible-playbook /bakerx/lib/builds/${job_name}/${build_file}`, json);
+    await ssh(`sudo ansible-playbook -vv /bakerx/lib/builds/${job_name}/${build_file}`, json);
    
 };
