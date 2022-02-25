@@ -1,7 +1,7 @@
 const chalk = require("chalk");
 const path = require("path");
-const process = require("child_process");
-const fs = require("fs");
+const cp = require("child_process");
+const waitssh = require('waitssh');
 
 exports.command = "init";
 exports.desc = "Prepare tool";
@@ -20,7 +20,7 @@ exports.handler = async (argv) => {
 
     // pull image
     try {
-      await process.execSync("bakerx pull focal cloud-images.ubuntu.com");
+      await cp.execSync("bakerx pull focal cloud-images.ubuntu.com");
     } catch {
       console.log(chalk.red("Error pulling focal image with bakerx!"));
     }
@@ -28,36 +28,51 @@ exports.handler = async (argv) => {
     // provision and start vm
     try {
       console.log(chalk.green("Configuring and starting vm with bakerx..."));
-      await process.execSync("bakerx run m1 focal --memory 1024");
+      await cp.execSync("bakerx run m1 focal --memory 1024");
     } catch {
       console.log(chalk.red("Error starting vm with bakerx!"));
     }
 
     // pull and parse the vm info including username, ip and path to ssh key
+    var json;
     try {
-      var obj = await process.execSync("bakerx ssh-info m1 --format json");
-      var json = JSON.parse(obj);
-      const userName = `USERNAME=${json.user}`;
-      const IP = `IP=${json.hostname}`;
-      const sshPath = `SSHPATH=${json.private_key}`;
-      const envOutput = `${userName}\n${IP}\n${sshPath}`;
-      console.log(envOutput);
-
-      // write variables to .env file
-      fs.writeFileSync("../.store", envOutput, (err) => {
-        if (err) {
-          console.error(
-            chalk.red("Error writing environmental variables to storage file!")
-          );
-          console.error(chalk.red(err));
-        }
-      });
+      var obj = await cp.execSync("bakerx ssh-info m1 --format json");
+      json = JSON.parse(obj);
+      console.log(`USERNAME=${json.user}`);
+      console.log(`IP=${json.hostname}`);
+      console.log(`SSHPATH=${json.private_key}`);
     } catch {
       console.log(chalk.red("Error obtaining vm details from bakerx!"));
     }
 
     //TODO: Add tools to build server
+    try {
+        await waitssh({port: json.port, hostname: json.hostname});
+    } catch (error) {
+        console.error(error);
+    }
 
+    async function ssh(cmd, sshExe) {
+        return new Promise(function (resolve, reject) { 
+            console.log( chalk.yellow(`${sshExe} ${cmd}`) );
+            cp.exec(`${sshExe} ${cmd}`, (error, stdout, stderr) => {
+    
+                console.log(error || stderr);
+                console.log(stdout);
+                resolve()
+    
+            });
+        });
+    }
+
+    try {
+        let sshCmd = `ssh ${json.user}@${json.hostname} -i "${json.private_key}" -p ${json.port} -o StrictHostKeyChecking=no`;
+        await ssh(`sudo apt update -y`, sshCmd);
+        await ssh(`sudo apt install ansible -y`, sshCmd);
+    } catch (error) {
+        console.error(error);
+        process.exit(1);
+    }
 
   } else {
     console.log("Processor type unsupported");
