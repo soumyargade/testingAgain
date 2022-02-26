@@ -18,9 +18,9 @@ class Step {
         this.command = command;
     }
 
-    execute(context) {
+    async execute(context) {
         try {
-            ssh(this.command, context);
+            await ssh(this.command, context);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
         }
@@ -33,12 +33,12 @@ class Job {
         this.steps = steps;
     }
 
-    runSteps(context) {
+    async runSteps(context) {
         console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
         for (const [index, step] of this.steps.entries()) {
             try {
-                console.log(`\t[${index + 1}/${this.steps.length}] ${step.name}`);
-                step.execute(context);
+                console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
+                await step.execute(context);
             } catch (e){
                 throw `Unable to complete job "${this.name}". ${e}`;
             }
@@ -51,8 +51,6 @@ class BuildFactory {
         this.setup = new Array();
         this.jobs = new Array();
         this.doc = yaml.load(yaml_string);
-        //DEBUG
-        console.log(chalk.grey(`doc in json: ${JSON.stringify(this.doc, "  ")}`));
     }
 
     parse() {
@@ -68,12 +66,10 @@ class BuildFactory {
         //     this.setup.push(new Step(setup_step, setup_step));
         // }
 
-        //DEBUG
-        console.log(this.doc.jobs);
         for(const job of this.doc.jobs) {
             let steps = new Array();
             for(const step of job.steps) {
-                steps.push(new Step(step.name, step.command));
+                steps.push(new Step(step.name, step.run));
             }
             this.jobs.push(new Job(job.name, steps));
         }
@@ -96,7 +92,7 @@ exports.handler = async argv => {
         factory.parse();
         //TODO setup
         for(const job of factory.jobs) {
-            job.runSteps(json); 
+            await job.runSteps(json); 
         }
     } catch (e) {
         console.log(chalk.red(e));
