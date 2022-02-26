@@ -15,7 +15,7 @@ exports.builder = yargs => {
 class Step {
     constructor(name, command) {
         this.name = name;
-        this.command = command;
+        this.command = command.replace(/"/g, '\\"'); //escape '"'
     }
 
     async execute(context) {
