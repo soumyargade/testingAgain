@@ -34,8 +34,10 @@ class Job {
     }
 
     runSteps(context) {
-        for (const step of steps) {
+        console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
+        for (const [index, step] of steps.entries()) {
             try {
+                console.log(`\t[${index + 1}/${this.steps.length}] ${step.name}`);
                 step.execute(context);
             } catch (e){
                 throw {name: "JobExecutionError", message: `Unable to complete job "${this.name}". ${e}`};
@@ -83,7 +85,7 @@ exports.handler = async argv => {
     var obj = cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
 
-    await ssh(`sudo ansible-playbook /bakerx/lib/builds/${job_name}/${build_file}`, json);
+    //await ssh(`sudo ansible-playbook /bakerx/lib/builds/${job_name}/${build_file}`, json);
 
     try {
         let factory = BuildFactory(fs.readFileSync(build_file, 'utf8')).parse();
