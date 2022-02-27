@@ -1,0 +1,16 @@
+setup:
+  - echo setup test
+
+jobs:
+  - name: Job1
+    steps:
+      - name: Step1
+        run: 'echo "step1 running"'
+      - name: Step2
+        run: 'echo "step2 running"'
+  - name: Job2
+    steps:
+      - name: Step3
+        run: 'echo "step3 running"'
+      - name: Step4
+        run: 'echo "step4 running"'
