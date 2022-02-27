@@ -106,4 +106,5 @@
           - name: Build iTrust
             community.docker.docker_container_exec:
                     container: itrust
-                    command: /bin/bash -c "cd /iTrust2-v10/iTrust2 && mvn spring-boot:run"    
+                    command: /bin/bash -c "cd /iTrust2-v10/iTrust2 && mvn spring-boot:run"   
+                    
