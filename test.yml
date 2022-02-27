@@ -1,5 +1,10 @@
 setup:
-  - echo setup test
+  - name: install packages
+    steps:
+      - name: install pip
+        package: 'apt-get install python3-pip'
+      - name: install something
+        package: 'insert'
 
 jobs:
   - name: Job1

@@ -27,6 +27,25 @@ class Step {
     }
 }
 
+class Setup {
+    constructor(name, steps) {
+        this.name = name;
+        this.steps = steps;
+    }
+
+    async runSteps(context) {
+        console.log(`Running SETUP "${this.name}" (${this.steps.length} steps)`);
+        for (const [index, step] of this.steps.entries()) {
+            try {
+                console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
+                await step.execute(context);
+            } catch (e){
+                throw `Unable to complete job "${this.name}". ${e}`;
+            }
+        }
+    }
+}
+
 class Job {
     constructor(name, steps) {
         this.name = name;
@@ -62,9 +81,13 @@ class BuildFactory {
             throw 'Missing required field "jobs" in yaml file';
         }
 
-        // for(setup_step of this.doc.setup) {
-        //     this.setup.push(new Step(setup_step, setup_step));
-        // }
+        for(const setup of this.doc.setup) {
+            let steps = new Array();
+            for (const step of setup.steps) {
+                steps.push(new Step(step.name, step.package));
+            }
+             this.setup.push(new Setup(setup.name, steps));
+        }
 
         for(const job of this.doc.jobs) {
             let steps = new Array();
@@ -90,7 +113,11 @@ exports.handler = async argv => {
     try {
         let factory = new BuildFactory(fs.readFileSync(build_file, 'utf8'))
         factory.parse();
-        //TODO setup
+
+        for (const setup of factory.setup) {
+            await setup.runSteps(json);
+        }
+
         for(const job of factory.jobs) {
             await job.runSteps(json); 
         }
