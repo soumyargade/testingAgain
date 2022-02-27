@@ -9,12 +9,12 @@ setup:
         run: 'echo "file1"'
   - name: packages
     steps:
-      - name: update
-        run: 'apt-get update'
-      - name: pip
-        run: 'apt-get install python3-pip'
-      - name: jdk 11
-        run: 'apt-get install openjdk-11-jdk -y'
+      - name: apt get update
+        run: 'ansible localhost -b -m apt -a "upgrade=yes update_cache=yes"'
+      - name: apt get python3-pip
+        run: 'ansible localhost -b -m apt -a "pkg=python3-pip"'
+      - name: apt get openjdk-11-jdk -y
+        run: 'ansible localhost -b -m apt -a "pkg=openjdk-11-jdk"'
   - name: docker
     steps:
       - name: engine
