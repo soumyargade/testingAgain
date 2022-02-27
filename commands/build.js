@@ -34,13 +34,13 @@ class Setup {
     }
 
     async runSteps(context) {
-        console.log(`Running SETUP "${this.name}" (${this.steps.length} steps)`);
+        console.log(`Running setup "${this.name}" (${this.steps.length} steps)`);
         for (const [index, step] of this.steps.entries()) {
             try {
                 console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
                 await step.execute(context);
             } catch (e){
-                throw `Unable to complete job "${this.name}". ${e}`;
+                throw `Unable to complete setup "${this.name}". ${e}`;
             }
         }
     }
@@ -84,7 +84,7 @@ class BuildFactory {
         for(const setup of this.doc.setup) {
             let steps = new Array();
             for (const step of setup.steps) {
-                steps.push(new Step(step.name, step.package));
+                steps.push(new Step(step.name, step.run));
             }
              this.setup.push(new Setup(setup.name, steps));
         }
