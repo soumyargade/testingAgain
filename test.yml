@@ -1,10 +1,26 @@
 setup:
-  - name: install packages
+  - name: env
     steps:
-      - name: install pip
-        package: 'apt-get install python3-pip'
-      - name: install something
-        package: 'insert'
+      - name: env1
+        run: 'echo "env1"'
+  - name: file
+    steps:
+      - name: file1
+        run: 'echo "file1"'
+  - name: packages
+    steps:
+      - name: update
+        run: 'apt-get update'
+      - name: pip
+        run: 'apt-get install python3-pip'
+      - name: jdk 11
+        run: 'apt-get install openjdk-11-jdk -y'
+  - name: docker
+    steps:
+      - name: engine
+        run: 'apt-get install docker-ce docker-ce-cli containerd.io'
+      - name: image
+        run: 'docker pull ubuntu:20.04'
 
 jobs:
   - name: Job1
