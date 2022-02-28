@@ -2,7 +2,7 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 const cp = require("child_process");
-const ssh = require('../lib/exec/ssh');
+const ansible = require('../lib/exec/ansible');
 const yaml = require('js-yaml');
 
 exports.command = 'build [job_name] [build_file]';
@@ -15,12 +15,12 @@ exports.builder = yargs => {
 class Step {
     constructor(name, command) {
         this.name = name;
-        this.command = command.replace(/"/g, '\\"'); //escape '"'
+        this.command = command;
     }
 
     async execute(context) {
         try {
-            await ssh(this.command, context);
+            await ansible(this.command, context);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
         }
