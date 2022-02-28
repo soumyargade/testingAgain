@@ -1,5 +1,26 @@
 setup:
-  - echo setup test
+  - name: env
+    steps:
+      - name: env1
+        run: 'echo "env1"'
+  - name: file
+    steps:
+      - name: file1
+        run: 'echo "file1"'
+  - name: packages
+    steps:
+      - name: apt get update
+        run: 'ansible localhost -b -m apt -a "upgrade=yes update_cache=yes"'
+      - name: apt get python3-pip
+        run: 'ansible localhost -b -m apt -a "pkg=python3-pip"'
+      - name: apt get openjdk-11-jdk -y
+        run: 'ansible localhost -b -m apt -a "pkg=openjdk-11-jdk"'
+  - name: docker
+    steps:
+      - name: engine
+        run: 'apt-get install docker-ce docker-ce-cli containerd.io'
+      - name: image
+        run: 'docker pull ubuntu:20.04'
 
 jobs:
   - name: Job1
