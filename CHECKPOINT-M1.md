@@ -8,6 +8,8 @@ We have provisioned & configured a build server in our `init.js` file using `bak
 
 We have created a [build job](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/lib/builds/itrust-build/build.yml) specification in the form of an Ansible Playbook solution, but are currently working on creating a new `build.yml` file that we feel will be more in line with the project description, containing both a `setup` and `jobs` object. This more [custom solution](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/test.yml) is currently named `test.yml` & we have verified that the `setup` and `jobs` objects present in this file are able to be parsed by the various classes we have created within `build.js` (a stylistic change we plan to make in the future involves placing these classes into their own separate files.). We were also able to confirm that the steps present in the `jobs` object are able to run within a container on the VM. Our next step is to transfer the rest of the configurations over from `build.yml` to `test.yml` and rename this file to serve as our official build job specification.
 
+We are also trying to add a programmatic way to call Ansible by creating an Ansible provider that calls through `ssh`. However, that is still a WIP as we are currently running into issues with heredoc on Windows. Another next step is to also work on translating our Ansible build to a `yaml` spec for iTrust1-v10.
+
 ## Issues Faced
 We have faced several issues so far in the project, including:
 
