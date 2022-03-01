@@ -105,6 +105,8 @@ exports.handler = async argv => {
 
     console.log(chalk.green("Building environment..."));
 
+    await ssh(`sudo docker run -t -d --rm --name ${job_name} ubuntu:focal`, json)
+
     var obj = cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
 
