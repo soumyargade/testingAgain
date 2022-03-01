@@ -57,6 +57,7 @@ exports.handler = async (argv) => {
         await ssh(`sudo add-apt-repository ppa:ansible/ansible`, json);
         await ssh(`sudo apt-get update -qq`, json);
         await ssh(`sudo apt-get install ansible -yqq`, json);
+
         await ssh(`sudo ansible-galaxy collection install community.docker`, json);
         await ssh(`curl -fsSL https://get.docker.com -o get-docker.sh`, json);
         await ssh(`sh get-docker.sh`, json);
