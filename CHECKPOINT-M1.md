@@ -7,7 +7,7 @@
 ## Issues Faced
 We have faced several issues so far in the project, including:
 
-1. Choosing an appropriate format for the ```build.yml``` file. We wrote and tested a full Ansible playbook to set up the build environment inside a Docker container. The Ansible [build.yml](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/lib/builds/itrust-build/build.yml) is resides in /lib/builds/itrust-build/. We are going back and writing a [test.yml](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/test.yml) ```build.yml``` file that we feel more closely aligns with the project specifications.
+1. Choosing an appropriate format for the ```build.yml``` file. We wrote and tested a full Ansible playbook to set up the build environment inside a Docker container. The Ansible [build.yml](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/lib/builds/itrust-build/build.yml) is resides in /lib/builds/itrust-build/. We are going back and writing a new ```build.yml``` file (currently [test.yml](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/test.yml)) that we feel more closely aligns with the project specifications.
 
 2. Choosing an interpreter for the ```build.yml``` file. Originally, we expected to use Ansible to interpret the ```build.yml``` file since the file would be an Ansible Playbook. Now that we are writing a custom ```build.yml```, we are writing custom functions to parse the ```build.yml``` file and interpret it accordingly. We still plan to use some Ansible CLI commands in our solution because they provide an effective means of running priviledged commands in the build environment (a Docker container). 
 
