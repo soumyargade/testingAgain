@@ -2,7 +2,6 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs');
 const cp = require("child_process");
-const ansible = require('../lib/exec/ansible');
 const ssh = require('../lib/exec/ssh');
 const yaml = require('js-yaml');
 
@@ -16,12 +15,12 @@ exports.builder = yargs => {
 class Step {
     constructor(name, command) {
         this.name = name;
-        this.command = command;
+        this.command = command.replace(/"/g, '\\"'); //escape '"'
     }
 
     async execute(context) {
         try {
-            await ansible(this.command, context);
+            await ssh(this.command, context);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
         }
@@ -69,7 +68,7 @@ class Job {
 class BuildFactory {
     constructor(yaml_string) {
         this.setup = new Array();
-        this.jobs = new Map();
+        this.jobs = new Array();
         this.doc = yaml.load(yaml_string);
     }
 
@@ -95,7 +94,7 @@ class BuildFactory {
             for(const step of job.steps) {
                 steps.push(new Step(step.name, step.run));
             }
-            this.jobs.set(job.name, new Job(job.name, steps));
+            this.jobs.push(new Job(job.name, steps));
         }
     }
 }
@@ -106,32 +105,22 @@ exports.handler = async argv => {
 
     console.log(chalk.green("Building environment..."));
 
-
     var obj = cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
 
+    //await ssh(`sudo ansible-playbook /bakerx/lib/builds/${job_name}/${build_file}`, json);
 
     try {
-        // create ephemeral job container
-        await ssh(`sudo docker run -t -d --rm --name ${job_name} ubuntu:focal`, json)
-
-        // Read the build file
         let factory = new BuildFactory(fs.readFileSync(build_file, 'utf8'))
         factory.parse();
 
-        // Complete all setup steps
         for (const setup of factory.setup) {
             await setup.runSteps(json);
         }
 
-        // Run only the requested job
-        await factory.jobs.get(job_name).runSteps(json);
-
-        // Get rid of the ephemeral container (eventually artifacts will be written
-        // to the host by way of a volume mounted for the job within the /bakerx 
-        // folder that is mounted using `--sync` within bakerx).
-        await ssh(`sudo docker stop ${job_name}`, json)
-
+        for(const job of factory.jobs) {
+            await job.runSteps(json); 
+        }
     } catch (e) {
         console.log(chalk.red(e));
     }

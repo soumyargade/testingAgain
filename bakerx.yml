@@ -1,0 +1,10 @@
+name: m1
+image: focal
+sync: true
+up: |
+    add-apt-repository ppa:ansible/ansible
+    apt-get update -qq
+    apt-get install ansible -yqq
+    ansible-galaxy collection install community.docker
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
