@@ -16,4 +16,4 @@ We have faced several issues so far in the project, including:
 4. A minor issue during the implementation of the Ansible solution was achieving indempotency for some commands. Several commands, such as updating the database password in the ```/iTrust2-v10/iTrust2/src/main/resources/application.yml``` file, are executed directly in bash in the build enviroment. Without checking if the file has already been updated, running the Playbook multiple times would result in adding the database password multiple times, rendering the file useless.
 
 ## Team Contributions
-Add screenshots of GitHub Project.
+<img src="https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/img/projectBoard.png">
