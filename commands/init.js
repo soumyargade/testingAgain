@@ -29,7 +29,8 @@ exports.handler = async (argv) => {
     // provision and start vm
     try {
       console.log(chalk.green("Configuring and starting vm with bakerx..."));
-      await cp.execSync("bakerx run m1 focal --memory 1024 --sync");
+      // await cp.execSync("bakerx run m1 focal --memory 1024 --sync");
+      await cp.execSync("bakerx run");
     } catch {
       console.log(chalk.red("Error starting vm with bakerx!"));
     }
@@ -39,30 +40,18 @@ exports.handler = async (argv) => {
     try {
       var obj = await cp.execSync("bakerx ssh-info m1 --format json");
       json = JSON.parse(obj);
-      console.log(`USERNAME=${json.user}`);
-      console.log(`IP=${json.hostname}`);
-      console.log(`SSHPATH=${json.private_key}`);
+      console.log(`Username: ${json.user}`);
+      console.log(`IP: ${json.hostname}`);
+      console.log(`SSHPATH: ${json.private_key}`);
     } catch {
       console.log(chalk.red("Error obtaining vm details from bakerx!"));
     }
 
-    //TODO: Add tools to build server
+    // wait for build server to be available before starting tool installation
     try {
         await waitssh({port: json.port, hostname: json.hostname});
     } catch (error) {
         console.error(error);
-    }
-
-    try {        
-        await ssh(`sudo add-apt-repository ppa:ansible/ansible`, json);
-        await ssh(`sudo apt-get update`, json);
-        await ssh(`sudo apt-get install ansible -y`, json);
-        await ssh(`sudo ansible-galaxy collection install community.docker`, json);
-        await ssh(`curl -fsSL https://get.docker.com -o get-docker.sh`, json);
-        await ssh(`sh get-docker.sh`, json);
-    } catch (error) {
-        console.error(error);
-        process.exit(1);
     }
 
   } else {

@@ -9,18 +9,13 @@ setup:
         run: 'echo "file1"'
   - name: packages
     steps:
-      - name: apt get update
-        run: 'ansible localhost -b -m apt -a "upgrade=yes update_cache=yes"'
-      - name: apt get python3-pip
-        run: 'ansible localhost -b -m apt -a "pkg=python3-pip"'
-      - name: apt get openjdk-11-jdk -y
-        run: 'ansible localhost -b -m apt -a "pkg=openjdk-11-jdk"'
-  - name: docker
-    steps:
-      - name: engine
-        run: 'apt-get install docker-ce docker-ce-cli containerd.io'
-      - name: image
-        run: 'docker pull ubuntu:20.04'
+      - name: update
+        run: 'apt-get update && apt-get upgrade -yqq'
+      - name: Install pip and openjdk 11
+        run: >
+          apt-get install -yqq \
+            python3-pip \
+            openjdk-11-jdk
 
 jobs:
   - name: Job1
