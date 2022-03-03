@@ -47,13 +47,18 @@ class Setup {
 }
 
 class Job {
-    constructor(name, steps) {
+    constructor(name, repo, steps) {
         this.name = name;
         this.steps = steps;
+        this.repo = repo.replace(/{{USERNAME}}/g, Env.username);
+        this.repo = repo.replace(/{{PASSWORD}}/g, Env.password);
+        this.job_loc = `${this.name}_${Date().now().toISOString()}`;
     }
 
     async runSteps(context) {
         console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
+        console.log(`Cloning repo`)
+        ssh(`git clone ${this.repo} ${this.job_loc}`, json, false);
         for (const [index, step] of this.steps.entries()) {
             try {
                 console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
@@ -94,7 +99,7 @@ class BuildFactory {
             for(const step of job.steps) {
                 steps.push(new Step(step.name, step.run));
             }
-            this.jobs.set(job.name, new Job(job.name, steps));
+            this.jobs.set(job.name, new Job(job.name, job.repo, steps));
         }
     }
 }

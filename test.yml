@@ -8,11 +8,8 @@ setup:
 
 jobs:
   - name: iTrust
+    repo: https://{{USERNAME}}:{{PASSWORD}}@github.ncsu.edu/engr-csc326-staff/iTrust2-v10.git
     steps:
-      - name: Copy iTrust
-        run: | 
-          mkdir iTrust2
-          cp -RT /bakerx/reference/iTrust2 /iTrust2
       - name: Setup iTrust
         run: |
           cp /iTrust2/src/main/resources/application.yml.template /iTrust2/src/main/resources/application.yml
