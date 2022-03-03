@@ -1,32 +1,27 @@
 setup:
-  - name: env
+  - name: build environment
     steps:
-      - name: env1
-        run: 'echo "env1"'
-  - name: file
-    steps:
-      - name: file1
-        run: 'echo "file1"'
-  - name: packages
-    steps:
-      - name: update
-        run: 'apt-get update && apt-get upgrade -yqq'
-      - name: Install pip and openjdk 11
-        run: >
-          apt-get install -yqq \
-            python3-pip \
-            openjdk-11-jdk
+      # - name: build dockerfile to setup docker image
+      #   run: 'sudo docker build -t p:latest - < /bakerx/Dockerfile'
+      - name: run docker build container
+        run: 'sudo docker run -d -v /bakerx:/bakerx --name itrust --network host p:latest sleep infinity'
+      - name: run docker mysql container
+        run: 'pass=$(grep -oP "root_pass:\s+\K\w+" /bakerx/.env) && sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=$pass -d mysql:8.0'
 
 jobs:
-  - name: Job1
+  - name: Copy iTrust
     steps:
-      - name: Step1
-        run: 'echo "step1 running"'
-      - name: Step2
-        run: 'echo "step2 running"'
-  - name: Job2
+      - name: make folder
+        run: 'sudo docker exec itrust mkdir iTrust2'
+      - name: copy iTrust
+        run: 'sudo docker exec itrust cp -RT /bakerx/reference/iTrust2 /iTrust2'
+  - name: Setup iTrust
     steps:
-      - name: Step3
-        run: 'echo "step3 running"'
-      - name: Step4
-        run: 'echo "step4 running"'
+      - name: rename YAML file
+        run: 'sudo docker exec itrust cp /iTrust2/src/main/resources/application.yml.template /iTrust2/src/main/resources/application.yml'
+      - name: configure application.yml file
+        run: 'sudo docker exec itrust /bakerx/reference/add_password.sh'
+  - name: Build iTrust
+    steps:
+      - name: build
+        run: 'sudo docker exec -w /iTrust2 itrust mvn -q spring-boot:run'
