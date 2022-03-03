@@ -68,7 +68,7 @@ class Job {
 class BuildFactory {
     constructor(yaml_string) {
         this.setup = new Array();
-        this.jobs = new Array();
+        this.jobs = new Map();
         this.doc = yaml.load(yaml_string);
     }
 
@@ -94,7 +94,7 @@ class BuildFactory {
             for(const step of job.steps) {
                 steps.push(new Step(step.name, step.run));
             }
-            this.jobs.push(new Job(job.name, steps));
+            this.jobs.set(job.name, new Job(job.name, steps));
         }
     }
 }
@@ -118,9 +118,7 @@ exports.handler = async argv => {
             await setup.runSteps(json);
         }
 
-        for(const job of factory.jobs) {
-            await job.runSteps(json); 
-        }
+        factory.jobs.get(job_name).runSteps(json);
     } catch (e) {
         console.log(chalk.red(e));
     }
