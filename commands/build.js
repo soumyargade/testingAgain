@@ -4,6 +4,7 @@ const fs = require('fs');
 const cp = require("child_process");
 const ssh = require('../lib/exec/ssh');
 const yaml = require('js-yaml');
+const mustache = require('mustache');
 
 exports.command = 'build [job_name] [build_file]';
 exports.desc = 'Prepare tool';
@@ -46,19 +47,24 @@ class Setup {
     }
 }
 
+//TODO: DEBUG ONLY
+const Env = {
+    "username": "testing",
+    "password": "P455W0rD",
+};
+
 class Job {
     constructor(name, repo, steps) {
         this.name = name;
         this.steps = steps;
-        this.repo = repo.replace(/{{USERNAME}}/g, Env.username);
-        this.repo = repo.replace(/{{PASSWORD}}/g, Env.password);
-        this.job_loc = `${this.name}_${Date().now().toISOString()}`;
+        this.repo = repo;
+        this.job_loc = `${this.name}_${(new Date()).toISOString()}`;
     }
 
     async runSteps(context) {
         console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
         console.log(`Cloning repo`)
-        ssh(`git clone ${this.repo} ${this.job_loc}`, json, false);
+        await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false);
         for (const [index, step] of this.steps.entries()) {
             try {
                 console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
