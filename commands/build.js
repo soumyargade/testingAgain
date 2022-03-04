@@ -7,6 +7,7 @@ const yaml = require('js-yaml');
 const mustache = require('mustache');
 const dotenv = require('dotenv').config;
 
+
 exports.command = 'build [job_name] [build_file]';
 exports.desc = 'Prepare tool';
 exports.builder = yargs => {
@@ -54,7 +55,9 @@ class Setup {
 //     "username": "testing",
 //     "password": "P455W0rD",
 // };
-   const Env = process.env;
+
+const Env = process.env;
+
 
 class Job {
     constructor(name, repo, steps) {
