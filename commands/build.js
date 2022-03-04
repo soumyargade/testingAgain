@@ -21,7 +21,7 @@ class Step {
 
     async execute(context) {
         try {
-            await ssh(mustache.render(this.command, Env), context);
+            await ssh(mustache.render(this.command, Env), context, true, this.command);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
         }
@@ -64,7 +64,7 @@ class Job {
     async runSteps(context) {
         console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
         console.log(`Cloning repo`)
-        await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false);
+        await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false, this.repo);
         for (const [index, step] of this.steps.entries()) {
             try {
                 console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
