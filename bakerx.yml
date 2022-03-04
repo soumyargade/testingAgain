@@ -1,4 +1,5 @@
 name: m1
 image: focal
+memory: 2048
 sync: true
 

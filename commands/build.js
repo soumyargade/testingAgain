@@ -5,6 +5,7 @@ const cp = require("child_process");
 const ssh = require('../lib/exec/ssh');
 const yaml = require('js-yaml');
 const mustache = require('mustache');
+const dotenv = require('dotenv').config;
 
 exports.command = 'build [job_name] [build_file]';
 exports.desc = 'Prepare tool';
@@ -21,6 +22,7 @@ class Step {
 
     async execute(context) {
         try {
+            console.log(mustache.render(this.command, Env));/////////
             await ssh(mustache.render(this.command, Env), context, true, this.command);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
@@ -48,22 +50,25 @@ class Setup {
 }
 
 //TODO: DEBUG ONLY
-const Env = {
-    "username": "testing",
-    "password": "P455W0rD",
-};
+// const Env = {
+//     "username": "testing",
+//     "password": "P455W0rD",
+// };
+   const Env = process.env;
 
 class Job {
     constructor(name, repo, steps) {
         this.name = name;
         this.steps = steps;
         this.repo = repo;
-        this.job_loc = `${this.name}_${(new Date()).toISOString()}`;
+        this.job_loc = `${this.name}_${(new Date()).getTime()}`;
     }
 
     async runSteps(context) {
+        Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
         console.log(`Cloning repo`)
+        console.log(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`);////////////////////
         await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false, this.repo);
         for (const [index, step] of this.steps.entries()) {
             try {
@@ -106,6 +111,7 @@ class BuildFactory {
                 steps.push(new Step(step.name, step.run));
             }
             this.jobs.set(job.name, new Job(job.name, job.repo, steps));
+            console.log(job.name, job.repo, steps); /////////////////////////////Debugging
         }
     }
 }
@@ -128,7 +134,6 @@ exports.handler = async argv => {
         for (const setup of factory.setup) {
             await setup.runSteps(json);
         }
-
         factory.jobs.get(job_name).runSteps(json);
     } catch (e) {
         console.log(chalk.red(e));

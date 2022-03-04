@@ -2,17 +2,20 @@ setup:
   - name: build environment
     steps:
       - name: Update
-        run: 'apt-get update -yqq'
+        run: 'sudo apt-get update -yqq && sleep 30'
       - name: Install Dependencies
-        run: 'apt-get install -yqq python3-pip openjdk-11-jdk git maven'
+        run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io'
 
 jobs:
-  - name: iTrust
+  - name: itrust-build
     repo: https://{{username}}:{{password}}@github.ncsu.edu/engr-csc326-staff/iTrust2-v10.git
     steps:
-      - name: Setup iTrust
-        run: |
-          cp /iTrust2/src/main/resources/application.yml.template /iTrust2/src/main/resources/application.yml \
-          && /bakerx/reference/add_password.sh
+      - name: Setup MySql
+        run: 'sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
+      - name: Copy application.yml file
+        run: 'cp {{job_loc}}/iTrust2/src/main/resources/application.yml.template {{job_loc}}/iTrust2/src/main/resources/application.yml'
+      - name: Copy database password into application.yml file
+        run: 'sudo sed -i "s/password\:/password\:\ {{root_pass}}/g" {{job_loc}}/iTrust2/src/main/resources/application.yml'
       - name: Build iTrust
-        run: 'mvn -q spring-boot:run'
+        # run: 'cd {{job_loc}}/iTrust2/ && mvn --batch-mode --update-snapshots clean test'
+        run: 'cd {{job_loc}}/iTrust2/ && mvn -q spring-boot:run'
