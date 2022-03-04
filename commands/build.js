@@ -6,6 +6,7 @@ const ssh = require('../lib/exec/ssh');
 const yaml = require('js-yaml');
 const mustache = require('mustache');
 
+
 exports.command = 'build [job_name] [build_file]';
 exports.desc = 'Prepare tool';
 exports.builder = yargs => {
@@ -48,10 +49,11 @@ class Setup {
 }
 
 //TODO: DEBUG ONLY
-const Env = {
-    "username": "testing",
-    "password": "P455W0rD",
-};
+// const Env = {
+//     "username": "testing",
+//     "password": "P455W0rD",
+// };
+const Env = process.env;
 
 class Job {
     constructor(name, repo, steps) {
