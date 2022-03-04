@@ -21,7 +21,7 @@ class Step {
 
     async execute(context) {
         try {
-            await ssh(this.command, context);
+            await ssh(mustache.render(this.command, Env), context);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
         }
