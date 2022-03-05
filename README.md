@@ -2,7 +2,7 @@
 
 A local .env file must be created in the repo folder after the repo is cloned. The .env file must have three variables defined in json format:
 
-```dotenv
+```bash
 username="unityid"
 password="ncsu_password"
 root_pass="any_password"
