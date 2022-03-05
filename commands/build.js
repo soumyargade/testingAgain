@@ -128,6 +128,11 @@ exports.handler = async argv => {
     var obj = cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
 
+    if (Env.hasOwnProperty("password")) {
+        Env.password = encodeURIComponent(Env.password); //encode the GitHub password so the user doesn't have to.
+        // Using this mechanism to access github has been disabled in github proper and probably for good reason. 
+    }
+
     //await ssh(`sudo ansible-playbook /bakerx/lib/builds/${job_name}/${build_file}`, json);
 
     try {
