@@ -1,11 +1,5 @@
-const chalk = require('chalk');
-const path = require('path');
-const fs = require('fs');
-const cp = require("child_process");
 const ssh = require('../lib/exec/ssh');
-const yaml = require('js-yaml');
 const mustache = require('mustache');
-const dotenv = require('dotenv').config;
 
 const Env = process.env;
 

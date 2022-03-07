@@ -1,13 +1,12 @@
 const chalk = require('chalk');
-const path = require('path');
 const fs = require('fs');
 const cp = require("child_process");
-const ssh = require('../lib/exec/ssh');
 const yaml = require('js-yaml');
-const mustache = require('mustache');
-const dotenv = require('dotenv').config;
 const {Step} = require('../commands/step');
+const {Setup} = require('../commands/setup');
+const {Job} = require('../commands/job')
 
+const Env = process.env;
 
 exports.command = 'build [job_name] [build_file]';
 exports.desc = 'Prepare tool';
@@ -15,52 +14,6 @@ exports.builder = yargs => {
     yargs.options({
     });
 };
-
-class Setup {
-    constructor(name, steps) {
-        this.name = name;
-        this.steps = steps;
-    }
-
-    async runSteps(context) {
-        console.log(`Running setup "${this.name}" (${this.steps.length} steps)`);
-        for (const [index, step] of this.steps.entries()) {
-            try {
-                console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
-                await step.execute(context);
-            } catch (e){
-                throw `Unable to complete setup "${this.name}". ${e}`;
-            }
-        }
-    }
-}
-
-const Env = process.env;
-
-
-class Job {
-    constructor(name, repo, steps) {
-        this.name = name;
-        this.steps = steps;
-        this.repo = repo;
-        this.job_loc = `${this.name}_${(new Date()).getTime()}`;
-    }
-
-    async runSteps(context) {
-        Env.job_loc = this.job_loc; // Write the folder name to environment variables
-        console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
-        console.log(`Cloning repo`)
-        await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false, this.repo);
-        for (const [index, step] of this.steps.entries()) {
-            try {
-                console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
-                await step.execute(context);
-            } catch (e){
-                throw `Unable to complete job "${this.name}". ${e}`;
-            }
-        }
-    }
-}
 
 class BuildFactory {
     constructor(yaml_string) {
