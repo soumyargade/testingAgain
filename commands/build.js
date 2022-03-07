@@ -6,6 +6,7 @@ const ssh = require('../lib/exec/ssh');
 const yaml = require('js-yaml');
 const mustache = require('mustache');
 const dotenv = require('dotenv').config;
+const {Step} = require('../commands/step');
 
 
 exports.command = 'build [job_name] [build_file]';
@@ -14,21 +15,6 @@ exports.builder = yargs => {
     yargs.options({
     });
 };
-
-class Step {
-    constructor(name, command) {
-        this.name = name;
-        this.command = command.replace(/"/g, '\\"'); //escape '"'
-    }
-
-    async execute(context) {
-        try {
-            await ssh(mustache.render(this.command, Env), context, true, this.command);
-        } catch (e) {
-            throw `Unable to complete step "${this.name}". ${e}`;
-        }
-    }
-}
 
 class Setup {
     constructor(name, steps) {
