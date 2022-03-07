@@ -23,7 +23,6 @@ class Step {
 
     async execute(context) {
         try {
-            console.log(mustache.render(this.command, Env));/////////
             await ssh(mustache.render(this.command, Env), context, true, this.command);
         } catch (e) {
             throw `Unable to complete step "${this.name}". ${e}`;
@@ -50,12 +49,6 @@ class Setup {
     }
 }
 
-//TODO: DEBUG ONLY
-// const Env = {
-//     "username": "testing",
-//     "password": "P455W0rD",
-// };
-
 const Env = process.env;
 
 
@@ -71,7 +64,6 @@ class Job {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Running job "${this.name}" (${this.steps.length} steps)`);
         console.log(`Cloning repo`)
-        console.log(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`);////////////////////
         await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false, this.repo);
         for (const [index, step] of this.steps.entries()) {
             try {
@@ -114,7 +106,6 @@ class BuildFactory {
                 steps.push(new Step(step.name, step.run));
             }
             this.jobs.set(job.name, new Job(job.name, job.repo, steps));
-            console.log(job.name, job.repo, steps); /////////////////////////////Debugging
         }
     }
 }
@@ -132,8 +123,6 @@ exports.handler = async argv => {
         Env.password = encodeURIComponent(Env.password); //encode the GitHub password so the user doesn't have to.
         // Using this mechanism to access github has been disabled in github proper and probably for good reason. 
     }
-
-    //await ssh(`sudo ansible-playbook /bakerx/lib/builds/${job_name}/${build_file}`, json);
 
     try {
         let factory = new BuildFactory(fs.readFileSync(build_file, 'utf8'))
