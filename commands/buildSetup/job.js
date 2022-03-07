@@ -1,4 +1,4 @@
-const ssh = require('../lib/exec/ssh');
+const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
 
 const Env = process.env;
