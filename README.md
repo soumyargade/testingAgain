@@ -13,8 +13,9 @@ root_pass="any_password"
 In order for the build process to successfully clone the iTrust repo from the NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub access token** in the place of "username" and "token". Any password consisting of numbers and letters can be put in the place of "any_password" for the root_pass as this password will be used for configuring the MySQL database.
 
 ## Milestone Report
-Document experiences you've had in learning about setting up the system & issues you had in automating the process.
-Include preexisting details from `CHECKPOINT`.
+[`CHECKPOINT.md`](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/CHECKPOINT-M1.md) details our team progress & issues faced all the way up until **March 2**.
+
+Over the course of the next ~1 week leading up to the deadline for this milestone, we primarily worked on being able to successfully configure a build environment for the given build job specification.
 
 ## Running the Code
 1. Clone the repo & create a `.env` file containing the fields specified above.
