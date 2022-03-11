@@ -1,8 +1,13 @@
 # Pipeline > Build
 ## Screencast
-Link: [Insert Here].
+[View here](https://drive.google.com/file/d/1aFCotNPFiHQq-daBrSUp6U9fjBSPcWk4/view?usp=sharing).
 ## `.env` File Specifications
-A local `.env` file must be created in the repo folder after the repo is cloned. It must have 3 variables defined in the following format:
+A local `.env` file must be created in the repo folder after the repo is cloned. 
+
+The variables defined must match the mustache-template `{{parameters}}` in the YAML file to be passed to `pipeline build`.
+
+A parameter key of `password` will be assumed to be a github password and special characters will be properly escaped for 
+use in a URL. 
 
 ```bash
 username="unityid"
@@ -10,7 +15,11 @@ token="token"
 root_pass="any_password"
 ```
 
-In order for the build process to successfully clone the iTrust repo from the NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub access token** in the place of "username" and "token". Any password consisting of numbers and letters can be put in the place of "any_password" for the root_pass as this password will be used for configuring the MySQL database.
+In order for the build process to successfully clone the iTrust repo from the 
+NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub access token** 
+in the place of "username" and "token". Any password consisting of numbers and 
+letters can be put in the place of "any_password" for the root_pass as this 
+password will be used for configuring the MySQL database.
 
 ## Milestone Report
 [`CHECKPOINT.md`](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/CHECKPOINT-M1.md) details our team progress & issues faced all the way up until **March 2**.
