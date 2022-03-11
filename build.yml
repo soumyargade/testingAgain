@@ -17,5 +17,5 @@ jobs:
       - name: Copy database password into application.yml file
         run: 'sudo sed -i "s/password\:/password\:\ {{root_pass}}/g" {{job_loc}}/iTrust2/src/main/resources/application.yml'
       - name: Build iTrust
-        run: 'cd {{job_loc}}/iTrust2/ && mvn -q --batch-mode --update-snapshots clean test'
+        run: 'cd {{job_loc}}/iTrust2/ && mvn --batch-mode --update-snapshots clean test'
         # run: 'cd {{job_loc}}/iTrust2/ && mvn -q spring-boot:run'
