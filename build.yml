@@ -22,16 +22,15 @@ jobs:
   - name: mutation-coverage
     repo: https://github.com/chrisparnin/checkbox.io-micro-preview
     steps:
-      - name: Setup
-        run: 'npm install'
       - name: Mutation Testing
         mutation:
-          run: 'node index.js'
           mutate:
             - index.js
           iterations: 1000
-          snapshots:
-           - 'http://localhost:3000/survey/long.md'
-           - 'http://localhost:3000/survey/upload.md'
-           - 'http://localhost:3000/survey/survey.md'
-           - 'http://localhost:3000/survey/variations.md'
+          snapshot:
+            run: 'npm install && node index.js'
+            collect:
+              - 'http://localhost:3000/survey/long.md'
+              - 'http://localhost:3000/survey/upload.md'
+              - 'http://localhost:3000/survey/survey.md'
+              - 'http://localhost:3000/survey/variations.md'
