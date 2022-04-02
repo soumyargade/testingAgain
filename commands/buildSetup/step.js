@@ -26,10 +26,11 @@ class Snapshot {
         this.collect = collect;
     }
 
-    async execute(context) {
+    async execute(context, working_dir) {
+        //TODO: Change to the working_dir
         //TODO: Run command
         //TODO: Collect snapshots (assume web-app)
-        //      Collect DOM and PNG for diff-ing
+        //      Collect DOM and/or PNG for diff-ing
     }
 }
 class Mutation extends Step {
@@ -43,6 +44,7 @@ class Mutation extends Step {
     async execute(context) {
         for(i = 0; i < this.num_iterations; i++) {
             //TODO: mutate the code
+                // Run mutation code on the remote node
             //TODO: Run the command in the mutated code directory
             //TODO: Collect the snapshots
         }
@@ -52,4 +54,5 @@ class Mutation extends Step {
 module.exports = {
     Step,
     Mutation,
+    Snapshot,
 };
