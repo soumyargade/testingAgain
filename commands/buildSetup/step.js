@@ -42,6 +42,7 @@ class Mutation extends Step {
     }
 
     async execute(context) {
+        //TODO: run original code and collect snapshots
         for(i = 0; i < this.num_iterations; i++) {
             //TODO: mutate the code
                 // Run mutation code on the remote node
