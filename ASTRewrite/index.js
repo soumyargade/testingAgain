@@ -128,6 +128,8 @@ function ControlFlow(ast) {
         }
     })
 
+
+ 
     //prune all buckets that only have 1 entry, since we can't mutate those
     for( let x of all_ifs.keys() ) {
         if (all_ifs.get(x).length <= 1) {
@@ -141,24 +143,36 @@ function ControlFlow(ast) {
 
 
     // Select the IfStatement within the chosen context that will recieve another IfStatement under it's `alternate` attribute
-    let new_parent_if_index= getRandomInt(chosen_context.length)
+    let new_parent_if_index = getRandomInt(chosen_context.length)
     let new_parent_if = chosen_context[new_parent_if_index];
     // if the `alternate` attribute is already filled, continue following the alternate chain until `alternate` is `null`
-    while ( new_parent_if.alternate !== null ) {
+    while ( new_parent_if.alternate && new_parent_if.alternate !== null ) {
         new_parent_if = new_parent_if.alternate;
     }
 
     // Select the IfStatement within the chosen context that will be placed under another IfStatement. 
-    let if_to_move_index;
+    let if_to_move_index = getRandomInt(chosen_context.length);
     // Keep trying to select one until new_parent_if_index and if_to_move_index are different.
-    while (if_to_move_index === new_parent_if_index ) getRandomInt(chosen_context.length);
+    while (if_to_move_index === new_parent_if_index ) if_to_move_index = getRandomInt(chosen_context.length);
     let if_to_move = chosen_context[if_to_move_index];
 
+    // change from child to alternate of parent (add else)
     new_parent_if.alternate = if_to_move;
+    // find the index of if_to_move in its parents array of children
+    let idx = 0;
+    for (let i = 0; i < if_to_move.parent.length; i++) {
+        if (if_to_move.parent[i] == if_to_move) idx = i;
+    }
+    // remove if_to_move as a child of its former parent
+    if_to_move.parent = if_to_move.parent.splice(idx, 1);
 
-    //TODO remove `if_to_move`. I think this requires more up-front information.
-    //      We need to save the index of the node in order to do if_to_move.parent.splice(if_to_move.orig_index, 1) to remove it.
+    // update the parents of if_to_mode to its new parents
+    for (let i = 0; i < if_to_move.parent.length; i++) {
+        if_to_move.parent[i] = new_parent_if.parent[i];
+    }
 
+
+    console.log( chalk.red(`Replacing "if" with "else if" on line ${new_parent_if.loc.start.line + 1}`));
 
 }
 
@@ -249,8 +263,8 @@ function ConstantReplacement(ast) {
     })
 }
 
-rewrite("../checkbox.io-micro-preview/test.js", 
-"../checkbox.io-micro-preview/test-mod.js")
+rewrite("../checkbox.io-micro-preview/marqdown.js", 
+"../checkbox.io-micro-preview/marqdown-mod.js")
 
 
 function getRandomInt(max) {
