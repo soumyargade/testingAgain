@@ -116,95 +116,53 @@ function ConditionalBoundaries(ast) {
 
 //TODO
 function ControlFlow(ast) {
-    // let candidates = 0;
+    let all_ifs = new Map();
 
-    // console.log(`AST: \n ${ast}`);
-
-    // let arr = ast.tokens;
-    // arr.forEach( token => {
-    //     if (token.type === "Keyword") {
-    //         console.log(token);
-    //     }
-    // })
-
-    // for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i].type === "Keyword" && arr[i].value === "if") {
-    //         if (i == 0 || (i > 0 && arr[i - 1].value != "else")) {
-    //         console.log(arr[i]);
-    //             candidates++;
-    //         arr[i].value = "else";
-    //         }
-    //     }
-    // }
-
-    // for (let i = 0; i < ast.tokens.length; i++) {
-    //     if (ast.tokens[i].type === "Keyword" && ast.tokens[i].value === "if") {
-    //         if (i == 0 || (i > 0 && ast.tokens[i - 1].value != "else")) {
-    //         console.log(ast.tokens[i]);
-    //             candidates++;
-    //             ast.tokens[i].value = "else";
-    //         }
-    //     }
-    // }
-
-    // let mutateTarget = getRandomInt(candidates);
-    // console.log(mutateTarget);
-    // //let current = 0;
-    // for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i].type === "Keyword" && arr[i].value === "if") {
-    //         if (i == 0 || (i > 0 && arr[i - 1].value != "else")) {
-    //             // if (i === mutateTarget) {
-    //                 let lineStart = arr[i].loc.start;
-    //                 let lineEnd = arr[i].loc.end;
-    //                 let rangeStart = arr[i].range[0];
-    //                 let rangeEnd = arr[i].range[1];
-    //                 arr[i].range[0] += 5;
-    //                 arr[i].range[1] += 5;
-    //                 let newToken = {
-    //                     type: 'Keyword',
-    //                     value: 'else',
-    //                     range: [rangeStart, rangeEnd],
-    //                     loc: { start: lineStart, end: lineEnd}
-    //                 }
-    //                 arr.splice(i, 0, newToken);
-    //             // }
-    //         }
-    //     }
-    // }
-
-    // for (let i = 0; i < arr.length; i++) {
-    //     if (arr[i].type === "Keyword") {
-    //         // if (i == 0 || (i > 0 && arr[i - 1].value != "else")) {
-    //         console.log(arr[i]);
-    //             candidates++;
-    //         // }
-    //     }
-    // }
-
-    //ast.tokens = arr;
-
-    let candidates = 0;
+    // set up `all_ifs` with buckets corresponding to the parent contexts in which the IfStatements reside
     traverseWithParents(ast, (node) => {
         if (node.type == "IfStatement") {
-            // console.log(node.loc.start.line)
-            candidates++;
-        }
-    })
-
-    let mutateTarget = getRandomInt(candidates);
-    let current = 0;
-
-    traverseWithParents(ast, (node) => {
-        if (node.type == "IfStatement") {
-            if (current === mutateTarget) {
-                if (node.alternate == null) {
-                    node.alternate = node;
-                }
-                current++;
+            if(!all_ifs.has(node.parent)) {
+                all_ifs.set(node.parent, new Array());
             }
-        console.log(node)
+            all_ifs.get(node.parent).push(node);
         }
     })
+
+    //prune all buckets that only have 1 entry, since we can't mutate those
+    for( let x of all_ifs.keys() ) {
+        if (all_ifs.get(x).length <= 1) {
+            all_ifs.delete(x);
+        }
+    }
+
+    // Choose the context that we want to mutate
+    let chosen_context_index = getRandomInt(Array.from(all_ifs.keys()).length);
+
+    let chosen_context = all_ifs.get(Array.from(all_ifs.keys())[chosen_context_index]); //gets the array of IfStatements from that context
+
+
+    // Select the IfStatement within the chosen context that will recieve another IfStatement under it's `alternate` attribute
+    let new_parent_if_index= getRandomInt(chosen_context.length)
+
+    // Select the IfStatement within the chosen context that will be placed under another IfStatement. 
+    let if_to_move_index;
+    // Keep trying to select one until new_parent_if_index and if_to_move_index are different.
+    while (if_to_move_index === new_parent_if_index ) getRandomInt(chosen_context.length);
+
+    let new_parent_if = chosen_context[new_parent_if_index];
+    // if the `alternate` attribute is already filled, continue following the alternate chain until `alternate` is `null`
+    while ( new_parent_if.alternate !== null ) {
+        new_parent_if = new_parent_if.alternate;
+    }
+
+    let if_to_move = chosen_context[if_to_move_index];
+
+    new_parent_if.alternate = if_to_move;
+
+    //TODO remove `if_to_move`. I think this requires more up-front information.
+    //      We need to save the index of the node in order to do if_to_move.parent.splice(if_to_move.orig_index, 1) to remove it.
+
+
 }
 
 function ConditionalExpression(ast) {
