@@ -3,23 +3,24 @@ const {Mutation} = require("./buildSetup/mutation");
 
 exports.command = "mutate [input_file] [output_file] [mutation_count] [mutation_function]";
 exports.desc = "Perform mutations on a file";
-exports.build = (yargs) => {
+exports.builder = (yargs) => {
     yargs.options({});
 }
 
 exports.handler = async (argv) => {
-    let { inFile, outFile, mutationCount, mutationFunction } = argv;
+    let { input_file, output_file, mutation_count, mutation_function } = argv;
 
-    if (!mutationCount) {
-        mutationCount = 1000;
+   
+    if (!mutation_count) {
+        mutation_count = 50;
     }
-    if (!mutationFunction) {
-        mutationFunction = random;
+    if (!mutation_function) {
+        mutation_function = "random";
     }
 
-    let mutation = new Mutation(inFile, outFile, mutationCount, mutationFunction);
+    let mutation = new Mutation(input_file, output_file, mutation_count, mutation_function);
 
-    console.log(chalk.green(`File ${inFile} will be mutated ${mutationCount} times and the results placed into file ${outFile}`));
+    console.log(chalk.green(`File ${input_file} will be mutated ${mutation_count} times and the results placed into file ${output_file}`));
 
     mutation.mutate();
 

@@ -1,4 +1,4 @@
-const operations = require('../../lib/exec/mutationOperations');
+const {MutationOperations} = require('../../lib/exec/mutationOperations');
 
 class Mutation {
     constructor(inFile, outFile, count, operation) {
@@ -10,7 +10,7 @@ class Mutation {
 
     async mutate() {
         try {
-            operations.mutate(this.inFile, this.outFile, this.count, this.operation);
+            MutationOperations.rewrite(this.inFile, this.outFile, this.count, this.operation);
         } catch (e) {
             throw `Unable to perform mutation operations. ${e}`;
         }
