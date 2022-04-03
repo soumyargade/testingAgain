@@ -137,24 +137,21 @@ function ControlFlow(ast) {
 
     // Choose the context that we want to mutate
     let chosen_context_index = getRandomInt(Array.from(all_ifs.keys()).length);
-
     let chosen_context = all_ifs.get(Array.from(all_ifs.keys())[chosen_context_index]); //gets the array of IfStatements from that context
 
 
     // Select the IfStatement within the chosen context that will recieve another IfStatement under it's `alternate` attribute
     let new_parent_if_index= getRandomInt(chosen_context.length)
-
-    // Select the IfStatement within the chosen context that will be placed under another IfStatement. 
-    let if_to_move_index;
-    // Keep trying to select one until new_parent_if_index and if_to_move_index are different.
-    while (if_to_move_index === new_parent_if_index ) getRandomInt(chosen_context.length);
-
     let new_parent_if = chosen_context[new_parent_if_index];
     // if the `alternate` attribute is already filled, continue following the alternate chain until `alternate` is `null`
     while ( new_parent_if.alternate !== null ) {
         new_parent_if = new_parent_if.alternate;
     }
 
+    // Select the IfStatement within the chosen context that will be placed under another IfStatement. 
+    let if_to_move_index;
+    // Keep trying to select one until new_parent_if_index and if_to_move_index are different.
+    while (if_to_move_index === new_parent_if_index ) getRandomInt(chosen_context.length);
     let if_to_move = chosen_context[if_to_move_index];
 
     new_parent_if.alternate = if_to_move;
