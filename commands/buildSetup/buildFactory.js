@@ -1,5 +1,5 @@
 const yaml = require('js-yaml');
-const {Step} = require('./step');
+const {Step, Mutation, Snapshot} = require('./step');
 const {Setup} = require('./setup');
 const {Job} = require('./job')
 
@@ -30,7 +30,19 @@ class BuildFactory {
         for(const job of this.doc.jobs) {
             let steps = new Array();
             for(const step of job.steps) {
-                steps.push(new Step(step.name, step.run));
+                if (step.hasOwnProperty("mutation")) {
+                    steps.push(new Mutation(
+                        step.name, 
+                        step.mutation.mutate, 
+                        step.mutation.iterations, 
+                        new Snapshot(
+                            step.mutation.snapshot.run,
+                            step.mutation.snapshot.collect
+                        )
+                    ));
+                } else {
+                    steps.push(new Step(step.name, step.run));
+                }
             }
             this.jobs.set(job.name, new Job(job.name, job.repo, steps));
         }

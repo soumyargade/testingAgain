@@ -19,3 +19,18 @@ jobs:
       - name: Build iTrust
         run: 'cd {{job_loc}}/iTrust2/ && mvn --batch-mode --update-snapshots clean test'
         # run: 'cd {{job_loc}}/iTrust2/ && mvn -q spring-boot:run'
+  - name: mutation-coverage
+    repo: https://github.com/chrisparnin/checkbox.io-micro-preview
+    steps:
+      - name: Mutation Testing
+        mutation:
+          mutate:
+            - index.js
+          iterations: 1000
+          snapshot:
+            run: 'npm install && node index.js'
+            collect:
+              - 'http://localhost:3000/survey/long.md'
+              - 'http://localhost:3000/survey/upload.md'
+              - 'http://localhost:3000/survey/survey.md'
+              - 'http://localhost:3000/survey/variations.md'

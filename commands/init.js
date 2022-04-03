@@ -1,8 +1,6 @@
 const chalk = require("chalk");
-const path = require("path");
 const cp = require("child_process");
 const waitssh = require('waitssh');
-const ssh = require('../lib/exec/ssh');
 
 exports.command = "init";
 exports.desc = "Prepare tool";
@@ -21,7 +19,7 @@ exports.handler = async (argv) => {
 
     // pull image
     try {
-      await cp.execSync("bakerx pull focal cloud-images.ubuntu.com");
+      cp.execSync("bakerx pull focal cloud-images.ubuntu.com");
     } catch {
       console.log(chalk.red("Error pulling focal image with bakerx!"));
     }
@@ -30,7 +28,7 @@ exports.handler = async (argv) => {
     try {
       console.log(chalk.green("Configuring and starting vm with bakerx..."));
       // await cp.execSync("bakerx run m1 focal --memory 1024 --sync");
-      await cp.execSync("bakerx run");
+      cp.execSync("bakerx run");
     } catch {
       console.log(chalk.red("Error starting vm with bakerx!"));
     }
@@ -38,7 +36,7 @@ exports.handler = async (argv) => {
     // pull and parse the vm info including username, ip and path to ssh key
     var json;
     try {
-      var obj = await cp.execSync("bakerx ssh-info m1 --format json");
+      var obj = cp.execSync("bakerx ssh-info m1 --format json");
       json = JSON.parse(obj);
       console.log(`Username: ${json.user}`);
       console.log(`IP: ${json.hostname}`);
