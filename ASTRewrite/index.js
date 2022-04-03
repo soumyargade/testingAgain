@@ -5,7 +5,7 @@ const options = {tokens:true, tolerant: true, loc: true, range: true };
 const fs = require("fs");
 const chalk = require('chalk');
 
-let operations = [ ConstantReplacement, nonEmptyString, CloneReturn, ConditionalExpression, ControlFlow, ConditionalBoundaries, Incrementals, NegateConditionals ]
+let operations = [ ConstantReplacement, NonEmptyString, CloneReturn, ConditionalExpression, ControlFlow, ConditionalBoundaries, Incrementals, NegateConditionals ]
 
 function rewrite( filepath, newPath ) {
 
@@ -114,7 +114,6 @@ function ConditionalBoundaries(ast) {
     })
 }
 
-//TODO
 function ControlFlow(ast) {
     let all_ifs = new Map();
 
@@ -218,7 +217,7 @@ function CloneReturn(ast) {
     })
 }
 
-function nonEmptyString(ast) {
+function NonEmptyString(ast) {
     let statement = "<div>Bug</div>";
     let candidates = 0;
     traverseWithParents(ast, (node) => {
