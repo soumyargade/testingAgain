@@ -27,8 +27,7 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        //TODO: Change to the working_dir
-        //TODO: Run command
+        await ssh(`cd ${working_dir} && ${this.command}`);
         //TODO: Collect snapshots (assume web-app)
         //      Collect DOM and/or PNG for diff-ing
     }
@@ -42,12 +41,20 @@ class Mutation extends Step {
     }
 
     async execute(context) {
-        //TODO: run original code and collect snapshots
+        //TODO: we might be able to be more clever with how we use async/await here
+        //      so we can get multiple things going at the same time.
+
+        // run original code and collect snapshots
+        for(let s of this.snapshots) {
+            await s.execute(context, ".");
+        }
         for(i = 0; i < this.num_iterations; i++) {
-            //TODO: mutate the code
-                // Run mutation code on the remote node
-            //TODO: Run the command in the mutated code directory
-            //TODO: Collect the snapshots
+            // Run mutation code on the remote node
+            await ssh(`mutate "${this.to_mutate}" "./mutation_${i}"`);
+            // Run the command in the mutated code directory and collect the snapshots
+            for(let s of this.snapshots) {
+                await s.execute(context, `./mutation_${i}`);
+            }
         }
     }
 }
