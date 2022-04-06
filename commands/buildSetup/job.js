@@ -19,7 +19,7 @@ class Job {
         for (const [index, step] of this.steps.entries()) {
             try {
                 console.log(` [${index + 1}/${this.steps.length}] ${step.name}`);
-                await step.execute(context);
+                await step.execute(context, this.job_loc);
             } catch (e){
                 throw `Unable to complete job "${this.name}". ${e}`;
             }

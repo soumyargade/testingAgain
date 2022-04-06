@@ -9,7 +9,7 @@ class Step {
         this.command = (command) ? command.replace(/"/g, '\\"') : false; //escape '"'
     }
 
-    async execute(context) {
+    async execute(context, _project_dir) {
         try {
             if(this.command !== false) {
                 await ssh(mustache.render(this.command, Env), context, true, this.command);
@@ -27,9 +27,17 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        await ssh(`cd ${working_dir} && ${this.command}`);
-        //TODO: Collect snapshots (assume web-app)
-        //      Collect DOM and/or PNG for diff-ing
+        let cmd = `set -x; mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
+        try {
+            await ssh(cmd, context);
+        } catch (e) {
+            throw `Unable to run [[${cmd}]]`;
+        }
+        // Collect snapshots (assume web-app)
+        // Collect DOM and/or PNG for diff-ing
+        for ( let u of this.collect ) {
+            await ssh(`cd ${working_dir} && screenshot ${u} snapshot`);
+        }
     }
 }
 class Mutation extends Step {
@@ -40,21 +48,17 @@ class Mutation extends Step {
         this.snapshots = snapshots;
     }
 
-    async execute(context) {
+    async execute(context, project_dir) {
         //TODO: we might be able to be more clever with how we use async/await here
         //      so we can get multiple things going at the same time.
 
         // run original code and collect snapshots
-        for(let s of this.snapshots) {
-            await s.execute(context, ".");
-        }
+        await this.snapshots.execute(context, project_dir);
         for(i = 0; i < this.num_iterations; i++) {
             // Run mutation code on the remote node
-            await ssh(`mutate "${this.to_mutate}" "./mutation_${i}"`);
+            await ssh(`mutate "${this.to_mutate}" "${project_dir}/mutation_${i}"`);
             // Run the command in the mutated code directory and collect the snapshots
-            for(let s of this.snapshots) {
-                await s.execute(context, `./mutation_${i}`);
-            }
+            await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }
     }
 }
