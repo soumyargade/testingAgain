@@ -4,7 +4,7 @@ setup:
       - name: Update
         run: 'sudo apt-get update -yqq && sleep 30'
       - name: Install Dependencies
-        run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io'
+        run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io nodejs npm'
 
 jobs:
   - name: itrust-build
