@@ -10,6 +10,12 @@ exports.builder = (yargs) => {
             describe: 'output directory',
             default: '.',
             type: "string"
+        },
+        mutation_function: {
+            alias: 'f',
+            describe: 'the mutation function to apply',
+            default: 'random',
+            type: 'string'
         }
     });
 }
@@ -17,9 +23,10 @@ exports.builder = (yargs) => {
 exports.handler = async (argv) => {
     let { file_glob, output_directory, mutation_function} = argv;
 
-    if (!mutation_function) {
-        mutation_function = "random";
-    }
+    // if (!mutation_function) {
+    //     mutation_function = "random";
+    // }
+
 
     let mutation = new Mutation(file_glob, output_directory, mutation_function);
 
