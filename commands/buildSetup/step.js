@@ -27,7 +27,7 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        let cmd = `set -x; mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
+        let cmd = `mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
         try {
             await ssh(cmd, context);
         } catch (e) {
@@ -56,7 +56,7 @@ class Mutation extends Step {
         await this.snapshots.execute(context, project_dir);
         for(i = 0; i < this.num_iterations; i++) {
             // Run mutation code on the remote node
-            await ssh(`mutate "${this.to_mutate}" "${project_dir}/mutation_${i}"`);
+            await ssh(`mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`);
             // Run the command in the mutated code directory and collect the snapshots
             await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }
