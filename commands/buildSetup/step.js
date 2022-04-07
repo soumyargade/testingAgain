@@ -9,7 +9,7 @@ class Step {
         this.command = (command) ? command.replace(/"/g, '\\"') : false; //escape '"'
     }
 
-    async execute(context) {
+    async execute(context, _project_dir) {
         try {
             if(this.command !== false) {
                 await ssh(mustache.render(this.command, Env), context, true, this.command);
@@ -27,10 +27,17 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        //TODO: Change to the working_dir
-        //TODO: Run command
-        //TODO: Collect snapshots (assume web-app)
-        //      Collect DOM and/or PNG for diff-ing
+        let cmd = `mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
+        try {
+            await ssh(cmd, context);
+        } catch (e) {
+            throw `Unable to run [[${cmd}]]`;
+        }
+        // Collect snapshots (assume web-app)
+        // Collect DOM and/or PNG for diff-ing
+        for ( let u of this.collect ) {
+            await ssh(`cd ${working_dir} && screenshot ${u} snapshot`);
+        }
     }
 }
 class Mutation extends Step {
@@ -41,13 +48,17 @@ class Mutation extends Step {
         this.snapshots = snapshots;
     }
 
-    async execute(context) {
-        //TODO: run original code and collect snapshots
+    async execute(context, project_dir) {
+        //TODO: we might be able to be more clever with how we use async/await here
+        //      so we can get multiple things going at the same time.
+
+        // run original code and collect snapshots
+        await this.snapshots.execute(context, project_dir);
         for(i = 0; i < this.num_iterations; i++) {
-            //TODO: mutate the code
-                // Run mutation code on the remote node
-            //TODO: Run the command in the mutated code directory
-            //TODO: Collect the snapshots
+            // Run mutation code on the remote node
+            await ssh(`mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`);
+            // Run the command in the mutated code directory and collect the snapshots
+            await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }
     }
 }
