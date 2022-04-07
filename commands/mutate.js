@@ -1,7 +1,7 @@
 const chalk = require("chalk");
 const {Mutation} = require("./buildSetup/mutation");
 
-exports.command = "mutate [file_glob] [mutation_function]";
+exports.command = "mutate [file_glob]";
 exports.desc = "Perform mutations on a file";
 exports.builder = (yargs) => {
     yargs.options({
@@ -22,11 +22,6 @@ exports.builder = (yargs) => {
 
 exports.handler = async (argv) => {
     let { file_glob, output_directory, mutation_function} = argv;
-
-    // if (!mutation_function) {
-    //     mutation_function = "random";
-    // }
-
 
     let mutation = new Mutation(file_glob, output_directory, mutation_function);
 
