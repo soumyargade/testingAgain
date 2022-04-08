@@ -27,17 +27,15 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        let cmd = `mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
-        try {
-            await ssh(cmd, context);
-        } catch (e) {
-            throw `Unable to run [[${cmd}]]`;
-        }
+        let cmd = `mkdir -p ${working_dir} ; cd ${working_dir} ; ${this.command} & echo "$!" > to_kill.pid`;
+        await ssh(cmd, context);
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         for ( let u of this.collect ) {
-            await ssh(`cd ${working_dir} && screenshot ${u} snapshot`);
+            await ssh(`cd ${working_dir} && pipeline screenshot ${u} snapshot`, context);
         }
+        await ssh(`cd ${working_dir} && kill $(cat to_kill.pid); rm -f to_kill.pid`, context);
+        await ssh(`node --version`, context);
     }
 }
 class Mutation extends Step {
@@ -56,7 +54,7 @@ class Mutation extends Step {
         await this.snapshots.execute(context, project_dir);
         for(i = 0; i < this.num_iterations; i++) {
             // Run mutation code on the remote node
-            await ssh(`mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`);
+            await ssh(`pipeline mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`, context);
             // Run the command in the mutated code directory and collect the snapshots
             await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }
