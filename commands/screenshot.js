@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
-exports.command = 'screenshot [url] [outfile]';
+exports.command = 'screenshot [url] [filename]';
 exports.desc = 'Take a screenshot of a url';
 exports.builder = yargs => {
     yargs.options({
