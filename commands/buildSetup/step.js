@@ -1,5 +1,6 @@
 const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
+const spawn = require('../../lib/exec/spawn');
 
 const Env = process.env;
 
@@ -27,14 +28,15 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        let cmd = `mkdir -p ${working_dir} ; cd ${working_dir} ; ${this.command} & echo "$!" > to_kill.pid`;
-        await ssh(cmd, context);
+        let cmd = `mkdir -p ${working_dir} ; cd ${working_dir} ; ${this.command}`;
+        spawn(cmd, context); // remove await so following processes aren't waiting on this one to return
+
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         for ( let u of this.collect ) {
             await ssh(`cd ${working_dir} && pipeline screenshot ${u} snapshot`, context);
         }
-        await ssh(`cd ${working_dir} && kill $(cat to_kill.pid); rm -f to_kill.pid`, context);
+        await ssh(`cd ${working_dir} && kill $(pgrep node)`, context);
         await ssh(`node --version`, context);
     }
 }
