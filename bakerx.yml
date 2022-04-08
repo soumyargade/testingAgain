@@ -2,4 +2,12 @@ name: m1
 image: focal
 memory: 2048
 sync: true
+# Bootstrap the mutation and screenshot utility commands
+up: |
+  curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+  apt-get install -y nodejs
+  cd /bakerx
+  npm install
+  npm link
+  
 
