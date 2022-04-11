@@ -1,4 +1,4 @@
-const {MutationOperations} = require('../../lib/exec/mutationOperations');
+const {MutationOperations} = require('./mutationOperations');
 
 class Mutation {
     constructor(fileGlob, outPath, operation) {
