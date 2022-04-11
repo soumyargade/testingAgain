@@ -36,7 +36,6 @@ class Snapshot {
         for ( let u of this.collect ) {
             await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} snapshot`, context);
         }
-        await ssh(`cd ${working_dir} && kill $(pgrep node)`, context);
         await ssh(`node --version`, context);
     }
 }
@@ -60,6 +59,7 @@ class Mutation extends Step {
             // Run the command in the mutated code directory and collect the snapshots
             await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }
+        await ssh(`kill $(pgrep node)`, context);
     }
 }
 
