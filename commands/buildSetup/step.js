@@ -56,7 +56,7 @@ class Mutation extends Step {
         await this.snapshots.execute(context, project_dir);
         for(let i = 0; i < this.num_iterations; i++) {
             // Run mutation code on the remote node
-            await ssh(`node /bakerx/support/index.js mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`, context);
+            await ssh(`cd ${project_dir} && node /bakerx/support/index.js mutate -o 'mutation_${i}' '${this.to_mutate}'`, context);
             // Run the command in the mutated code directory and collect the snapshots
             await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }
