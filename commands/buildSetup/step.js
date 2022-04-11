@@ -34,7 +34,7 @@ class Snapshot {
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         for ( let u of this.collect ) {
-            await ssh(`cd ${working_dir} && node /bakerx/index.js screenshot ${u} snapshot`, context);
+            await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} snapshot`, context);
         }
         await ssh(`cd ${working_dir} && kill $(pgrep node)`, context);
         await ssh(`node --version`, context);
@@ -56,7 +56,7 @@ class Mutation extends Step {
         await this.snapshots.execute(context, project_dir);
         for(let i = 0; i < this.num_iterations; i++) {
             // Run mutation code on the remote node
-            await ssh(`node /bakerx/index.js mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`, context);
+            await ssh(`node /bakerx/support/index.js mutate -o "${project_dir}/mutation_${i}" "${this.to_mutate}"`, context);
             // Run the command in the mutated code directory and collect the snapshots
             await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
         }

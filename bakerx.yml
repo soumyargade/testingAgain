@@ -6,7 +6,7 @@ sync: true
 up: |
   curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
   apt-get install -y nodejs
-  cd /bakerx
+  cd /bakerx/support
   npm install
   npm link
   
