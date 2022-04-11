@@ -28,7 +28,7 @@ jobs:
             - index.js
           iterations: 1000
           snapshot:
-            run: 'npm install ; node index.js'
+            run: 'npm install ; node index.js ; sleep 0.25'
             collect:
               - 'http://localhost:3000/survey/long.md'
               - 'http://localhost:3000/survey/upload.md'
