@@ -36,7 +36,7 @@ exports.handler = async (argv) => {
     // pull and parse the vm info including username, ip and path to ssh key
     var json;
     try {
-      var obj = cp.execSync("bakerx ssh-info m2 --format json");
+      var obj = cp.execSync("bakerx ssh-info m1 --format json");
       json = JSON.parse(obj);
       console.log(`Username: ${json.user}`);
       console.log(`IP: ${json.hostname}`);
