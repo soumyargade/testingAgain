@@ -34,7 +34,7 @@ class Snapshot {
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         for ( let u of this.collect ) {
-            await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}}`, context);
+            await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}`, context);
         }
         await ssh(`node --version`, context);
     }
