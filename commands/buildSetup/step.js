@@ -30,13 +30,14 @@ class Snapshot {
     async execute(context, working_dir) {
         let cmd = `mkdir -p ${working_dir} ; cd ${working_dir} ; ${this.command}`;
         spawn(cmd, context); // remove await so following processes aren't waiting on this one to return
-
+        await ssh('sleep 5', context); // give enough time for server to come up on port 3000
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         for ( let u of this.collect ) {
-            await ssh(`sleep 0.5; cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}`, context);
+            await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}`, context);
         }
         await ssh(`node --version`, context);
+
     }
 }
 class Mutation extends Step {
