@@ -28,7 +28,7 @@ class Snapshot {
     }
 
     async execute(context, working_dir) {
-        let cmd = `mkdir -p ${working_dir} ; cd ${working_dir} ; ${this.command}`;
+        let cmd = `mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
         spawn(cmd, context); // remove await so following processes aren't waiting on this one to return
         await ssh('sleep 5', context); // give enough time for server to come up on port 3000
         // Collect snapshots (assume web-app)
@@ -36,8 +36,7 @@ class Snapshot {
         for ( let u of this.collect ) {
             await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}`, context);
         }
-        await ssh(`node --version`, context);
-
+        await ssh(`killall node`, context);
     }
 }
 class Mutation extends Step {
@@ -55,12 +54,11 @@ class Mutation extends Step {
         // run original code and collect snapshots
         await this.snapshots.execute(context, project_dir);
         for(let i = 0; i < this.num_iterations; i++) {
-            // Run mutation code on the remote node
-            await ssh(`cd ${project_dir} && node /bakerx/support/index.js mutate -o 'mutation_${i}' '${this.to_mutate}'`, context);
+            // Run mutation code on the remote node. A hidden folder is to prevent compounded, recursive copying.
+            await ssh(`cd ${project_dir} && mkdir -p .mutation_${i} && cp -r * .mutation_${i} && node /bakerx/support/index.js mutate -o '.mutation_${i}' '${this.to_mutate}'`, context);
             // Run the command in the mutated code directory and collect the snapshots
-            await this.snapshots.execute(context, `${project_dir}/mutation_${i}`);
+            await this.snapshots.execute(context, `${project_dir}/.mutation_${i}`);
         }
-        await ssh(`kill $(pgrep node)`, context);
     }
 }
 
