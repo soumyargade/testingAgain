@@ -33,9 +33,12 @@ class Snapshot {
         await ssh('sleep 5', context); // give enough time for server to come up on port 3000
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
+        let promises = new Array();
         for ( let u of this.collect ) {
-            await ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}`, context);
+            promises.push( ssh(`cd ${working_dir} && node /bakerx/support/index.js screenshot ${u} ${u.split('/').pop()}`, context));
         }
+        // run all the snapshots at the same time and wait for them all
+        await Promise.all(promises);
         await ssh(`killall node`, context);
     }
 }
