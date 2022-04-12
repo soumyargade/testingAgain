@@ -1,5 +1,5 @@
 const chalk = require("chalk");
-const {Mutation} = require("./buildSetup/mutation");
+const {Mutation} = require("../lib/mutation");
 
 exports.command = "mutate [file_glob]";
 exports.desc = "Perform mutations on a file";

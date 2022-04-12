@@ -1,5 +1,5 @@
 {
-  "name": "pipeline",
+  "name": "pl-sup",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,15 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^4.1.2",
-    "dotenv": "^16.0.0",
     "escodegen": "^2.0.0",
     "esprima": "^4.0.1",
     "glob": "^7.2.0",
-    "hasbin": "^1.2.3",
-    "js-yaml": "^4.1.0",
-    "mustache": "^4.2.0",
     "puppeteer": "^13.4.0",
-    "waitssh": "^1.0.5",
     "yargs": "^17.3.1"
   }
 }

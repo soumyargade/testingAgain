@@ -25,7 +25,7 @@ jobs:
       - name: Mutation Testing
         mutation:
           mutate:
-            - index.js
+            - marqdown.js
           iterations: 1000
           snapshot:
             run: 'npm install && node index.js'

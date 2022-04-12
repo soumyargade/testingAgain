@@ -105,12 +105,7 @@ class MutationOperations {
         let candidates = 0;
         MutationOperations.traverseWithParents(ast, (node) => {
             if(node.type === "UpdateExpression" && node.operator === "++") {
-                if(node.argument.name === 'j' && node.prefix === true) {
-                    candidates++;
-                }
-                if(node.argument.name === 'i' && node.prefix === false) {
-                    candidates++;
-                }
+                candidates++;
             }
         })
 
@@ -118,17 +113,17 @@ class MutationOperations {
         let current = 0;
         MutationOperations.traverseWithParents(ast, (node) => {
             if (node.type === "UpdateExpression" && node.operator === "++") {
-                if(node.argument.name === 'j' && node.prefix === true) {
+                if(node.prefix === true) {
                     if(current === mutateTarget) {
                         node.prefix = false;
-                        console.log(chalk.red(`Replacing ++j with j++ on line ${node.loc.start.line}`));
+                        console.log(chalk.red(`Replacing ++${node.argument.name} with ${node.argument.name}++ on line ${node.loc.start.line}`));
                     }
                     current++;
                 }
-                if(node.argument.name === 'i' && node.prefix === false) {
+                if(node.prefix === false) {
                     if(current === mutateTarget) {
                         node.operator = "--";
-                        console.log(chalk.red(`Replacing i++ with i-- on line ${node.loc.start.line}`));
+                        console.log(chalk.red(`Replacing ${node.argument.name}++ with ${node.argument.name}-- on line ${node.loc.start.line}`));
                     }
                     current++;
                 }
