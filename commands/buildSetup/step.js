@@ -55,7 +55,7 @@ class Mutation extends Step {
         //TODO: we might be able to be more clever with how we use async/await here
         //      so we can get multiple things going at the same time.
         if(this.init !== false) {
-            await ssh(`cd ${project_dir} && ${this.init}`);
+            await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
         // run original code and collect snapshots
