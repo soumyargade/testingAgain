@@ -43,16 +43,20 @@ class Snapshot {
     }
 }
 class Mutation extends Step {
-    constructor(name, files_to_mutate, iterations, snapshots) {
+    constructor(name, files_to_mutate, iterations, init, snapshots) {
         super(name);
         this.to_mutate = files_to_mutate;
         this.num_iterations = iterations;
+        this.init = init;
         this.snapshots = snapshots;
     }
 
     async execute(context, project_dir) {
         //TODO: we might be able to be more clever with how we use async/await here
         //      so we can get multiple things going at the same time.
+        if(this.init !== false) {
+            await ssh(`cd ${project_dir} && ${this.init}`);
+        }
 
         // run original code and collect snapshots
         await this.snapshots.execute(context, project_dir);

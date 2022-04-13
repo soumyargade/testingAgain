@@ -35,6 +35,7 @@ class BuildFactory {
                         step.name, 
                         step.mutation.mutate, 
                         step.mutation.iterations, 
+                        step.mutation.init ?? false,
                         new Snapshot(
                             step.mutation.snapshot.run,
                             step.mutation.snapshot.collect
