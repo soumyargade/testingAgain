@@ -30,7 +30,10 @@ class Snapshot {
     async execute(context, working_dir) {
         let cmd = `mkdir -p ${working_dir} && cd ${working_dir} && ${this.command}`;
         spawn(cmd, context); // remove await so following processes aren't waiting on this one to return
-        await ssh('sleep 5', context); // give enough time for server to come up on port 3000
+        await ssh(`while ! lsof -nP -iTCP -sTCP:LISTEN | grep -q "^node.*3000"; do : ; done`, context); // give enough time for server to come up on port 3000
+        // FIXME: Some assumptions are being made above: 1) this is a node application 2) it is listening on port 3000
+        //          These assumptions can probably be mitigated either from explicit attributes being added to yaml file OR by inferring from the existing information. 
+
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         let promises = new Array();
