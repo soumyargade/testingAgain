@@ -26,8 +26,8 @@ jobs:
         mutation:
           mutate:
             - marqdown.js
-          iterations: 1000
-          init: 'npm install ; mkdir test-output'
+          iterations: 10
+          init: 'npm install'
           snapshot:
             run: 'node index.js'
             collect:
