@@ -69,10 +69,12 @@ class Mutation extends Step {
         // run original code and collect snapshots
         await this.snapshots.execute(context, project_dir, '');
         for(let i = 0; i < this.num_iterations; i++) {
-            // Run mutation code on the remote node. A hidden folder is to prevent compounded, recursive copying.
-            await ssh(`cd ${project_dir} && node /bakerx/support/index.js mutate -o ${'test-output/' + this.to_mutate + '.' + i} '${this.to_mutate}'`, context);
-            // Run the command in the mutated code directory and collect the snapshots
-            await this.snapshots.execute(context, project_dir, i);
+            // Run mutation code on the remote node.
+            await ssh(`cd ${project_dir} && cp ${this.to_mutate} ${this.to_mutate}.backup`, context); // Backup the file we're going to mutate
+            await ssh(`cd ${project_dir} && node /bakerx/support/index.js mutate -o ${this.to_mutate} '${this.to_mutate}'`, context); // Mutate the file
+            await this.snapshots.execute(context, project_dir, i);             // Run the mutated file and collect the snapshots
+            // Save mutated file and restore the original file
+            await ssh(`cd ${project_dir} && cp ${this.to_mutate} test-output/${this.to_mutate}.${i} && cp ${this.to_mutate}.backup ${this.to_mutate} && rm ${this.to_mutate}.backup`, context);
         }
     }
 }

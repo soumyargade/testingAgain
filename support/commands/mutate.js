@@ -2,7 +2,7 @@ const chalk = require("chalk");
 const {Mutation} = require("../lib/mutation");
 
 exports.command = "mutate [file_glob]";
-exports.desc = "Perform mutations on a file";
+exports.desc = "Perform mutations on a file or set of files";
 exports.builder = (yargs) => {
     yargs.options({
         output_directory: {
