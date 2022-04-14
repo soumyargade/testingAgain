@@ -29,14 +29,6 @@ class MutationOperations {
                 let rand = MutationOperations.getRandomInt(files.length);
                 filepath = files[rand]
 
-                // if (!fs.existsSync(newPath)) fs.mkdirSync(newPath);
-
-                // files.forEach( (file) => {
-                //     fs.copyFileSync(file, newPath + "/" + file);
-                // })
-
-                // newPath = newPath + "/" + filepath;
-
                 console.log(chalk.green(`File ${filepath} will be mutated and the results placed into file ${newPath}`));
 
                 var buf = fs.readFileSync(filepath, "utf8");
