@@ -19,7 +19,5 @@ up: |
     libpango-1.0-0 \
     libcairo2
   cd /bakerx/support
-  npm install
+  npm install  
   npm link
-  
-
