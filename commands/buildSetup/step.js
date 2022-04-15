@@ -64,18 +64,50 @@ class Mutation extends Step {
             await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
-        await ssh(`mkdir ${project_dir}/test-output/`, context);
+
+        // Create a test output folder and a backup folder
+        await ssh(`cd ${project_dir} && mkdir test-output backup`, context);
+        // Rewrite the files with escodegen so they can be more easily compared to the mutated files
+        await ssh(`cd ${project_dir} && for f in ${this.to_mutate}; do node /bakerx/support/index.js mutate -f none -o $f $f; done && cp ${this.to_mutate} backup`, context);
 
         // run original code and collect snapshots
         await this.snapshots.execute(context, project_dir, '');
+
+        // mutate code and take snapshots with the mutated code in place
         for(let i = 0; i < this.num_iterations; i++) {
             // Run mutation code on the remote node.
-            await ssh(`cd ${project_dir} && cp ${this.to_mutate} ${this.to_mutate}.backup`, context); // Backup the file we're going to mutate
-            await ssh(`cd ${project_dir} && node /bakerx/support/index.js mutate -o ${this.to_mutate} '${this.to_mutate}'`, context); // Mutate the file
-            await this.snapshots.execute(context, project_dir, i);             // Run the mutated file and collect the snapshots
-            // Save mutated file and restore the original file
-            await ssh(`cd ${project_dir} && cp ${this.to_mutate} test-output/${this.to_mutate}.${i} && cp ${this.to_mutate}.backup ${this.to_mutate} && rm ${this.to_mutate}.backup`, context);
+            //await ssh(`cd ${project_dir} && cp ${this.to_mutate} backup`, context); // Backup the files we're going to mutate
+
+            await ssh(`cd ${project_dir} && for f in ${this.to_mutate}; do node /bakerx/support/index.js mutate -o $f $f; done`, context); // Mutate the file(s)
+            await this.snapshots.execute(context, project_dir, i);             // Run the mutated file(s) and collect the snapshots
+            // Save mutated files in test-output and restore the original files
+            await ssh(`cd ${project_dir} && for f in ${this.to_mutate}; do mv $f test-output/"$f".${i}; done && cp backup/${this.to_mutate} ./`, context);
+            // await ssh(`cd ${project_dir} && mv ${this.to_mutate} test-output/${this.to_mutate}.${i} && mv ${this.to_mutate}.backup ${this.to_mutate}`, context);
         }
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////     CLEANUP   /////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+
+        await ssh(`cd ${project_dir} && sudo rm -r backup`, context); // Remove the backups folder
+
+
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////// COVERAGE REPORT /////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+
+        await ssh(`cd ${project_dir}/test-output/ && touch coverage_report`, context);
+        // this.snapshots.collect.forEach(u => {
+        for (const u of this.snapshots.collect) {
+            let filename = u.slice(u.lastIndexOf("/") + 1);
+            let png_name = `${filename}.png`
+            await ssh(`cd ${project_dir}/test-output/ && /bakerx/lib/scripts/coverage_report.sh ${png_name} '${filename}*' ${this.num_iterations} | tee -a coverage_report`, context);
+        }
+
+        await ssh(`cd ${project_dir} && mkdir /bakerx/output && cp test-output/* /bakerx/output`, context); // Copy test files to host
+
     }
 }
 

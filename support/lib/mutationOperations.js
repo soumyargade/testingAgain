@@ -42,6 +42,11 @@ class MutationOperations {
                 let opIdx = MutationOperations.getRandomInt(MutationOperations.operations.length);
                 let op = MutationOperations.operations[opIdx]
         
+                if (operation == "none") {
+                    code = escodegen.generate(ast);
+                    fs.writeFileSync(newPath, code);
+                    return;
+                }
         
                 if (operation != "random") {
                     for (let i = 0; i < MutationOperations.operations.length; i++) {
