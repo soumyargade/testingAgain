@@ -98,8 +98,9 @@ class Mutation extends Step {
         /////////////////////////// COVERAGE REPORT /////////////////////////////////////
         /////////////////////////////////////////////////////////////////////////////////
 
-        await ssh(`cd ${project_dir}/test-output/ && touch coverage_report`, context);
-        // this.snapshots.collect.forEach(u => {
+        // Create a coverage_report file, fix line feed issues on shell script
+        await ssh(`cd ${project_dir}/test-output/ && touch coverage_report && sed -i -e 's/\r$//' /bakerx/lib/scripts/coverage_report.sh`, context);
+
         for (const u of this.snapshots.collect) {
             let filename = u.slice(u.lastIndexOf("/") + 1);
             let png_name = `${filename}.png`
