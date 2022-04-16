@@ -64,7 +64,7 @@ class Mutation extends Step {
             await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
-        await ssh(`sed -e 's/\r$//' /bakerx/support/run_mutations.sh > ~/run_mutations.sh && chmod +x ~/run_mutations.sh`, context);
+       await ssh(`cp /bakerx/support/run_mutations.sh ./run_mutations.sh && cp /bakerx/support/sed.sh ./sed.sh && ./sed.sh && chmod +x ./run_mutations.sh`, context);
 
         let url_cmd_str = "";
         for ( let u of this.collect ) {
@@ -82,7 +82,7 @@ class Mutation extends Step {
             glob_cmd_str += `"${g}"`;
         }
 
-        await ssh(`~/run_mutations.sh -c "${this.command}" -o "/bakerx/output" -p "${project_dir}" -n "${this.num_iterations}" ${url_cmd_str} ${glob_cmd_str}`, context);
+        await ssh(`sudo ~/run_mutations.sh -c "${this.command}" -o "/bakerx/output" -p "${project_dir}" -n "${this.num_iterations}" ${url_cmd_str} ${glob_cmd_str}`, context);
     }
 }
 
