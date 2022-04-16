@@ -112,6 +112,7 @@ if [ "$#" != 0 ]; then
             --)         while [ "$1" != "$EOL" ]; do set -- "$@" "$1"; shift; done;;  # process remaining arguments as positional
             -*)         usage_error "unknown option: '$opt'";;                        # catch misspelled options
             *)          usage_error "this should NEVER happen ($opt)";;               # sanity test for previous patterns
+        esac
     done
 fi
 
