@@ -49,12 +49,12 @@ class Snapshot {
     }
 }
 class Mutation extends Step {
-    constructor(name, files_to_mutate, iterations, init, snapshots) {
-        super(name);
+    constructor(name, files_to_mutate, iterations, init, command, collect) {
+        super(name, command);
         this.to_mutate = files_to_mutate;
         this.num_iterations = iterations;
         this.init = init;
-        this.snapshots = snapshots;
+        this.collect = collect;
     }
 
     async execute(context, project_dir) {
@@ -64,51 +64,25 @@ class Mutation extends Step {
             await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
+        await ssh(`sed -i -e 's/\r$//' /bakerx/support/run_mutations.sh && chmod +x /bakerx/support/run_mutations.sh`, context);
 
-        // Create a test output folder and a backup folder
-        await ssh(`cd ${project_dir} && mkdir test-output backup`, context);
-        // Rewrite the files with escodegen so they can be more easily compared to the mutated files
-        await ssh(`cd ${project_dir} && find -maxdepth 0 -name "${this.to_mutate}" -type f -exec node /bakerx/support/index.js mutate -f none -o "{}" "{}" \\; && cp ${this.to_mutate} backup`, context);
-
-        // run original code and collect snapshots
-        await this.snapshots.execute(context, project_dir, '');
-
-        // mutate code and take snapshots with the mutated code in place
-        for(let i = 0; i < this.num_iterations; i++) {
-            // Run mutation code on the remote node.
-            //await ssh(`cd ${project_dir} && cp ${this.to_mutate} backup`, context); // Backup the files we're going to mutate
-
-            await ssh(`cd ${project_dir} && find -maxdepth 0 -name "${this.to_mutate}" -exec node /bakerx/support/index.js mutate -o "{}" "{}" \\;`, context); // Mutate the file(s)
-            await this.snapshots.execute(context, project_dir, i);             // Run the mutated file(s) and collect the snapshots
-            // Save mutated files in test-output and restore the original files
-            await ssh(`set -x && cd ${project_dir} && ls -al && find -maxdepth 0 -name "${this.to_mutate}" -exec mv {} "test-output/{}.${i}" \\; && cp backup/${this.to_mutate} ./`, context);
-            // await ssh(`cd ${project_dir} && mv ${this.to_mutate} test-output/${this.to_mutate}.${i} && mv ${this.to_mutate}.backup ${this.to_mutate}`, context);
+        let url_cmd_str = "";
+        for ( let u of this.collect ) {
+            if (url_cmd_str.length != 0) {
+                url_cmd_str += " ";
+            }
+            url_cmd_str += `-u "${u}"`;
         }
 
-
-
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////     CLEANUP   /////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-
-        await ssh(`cd ${project_dir} && sudo rm -r backup`, context); // Remove the backups folder
-
-
-        /////////////////////////////////////////////////////////////////////////////////
-        /////////////////////////// COVERAGE REPORT /////////////////////////////////////
-        /////////////////////////////////////////////////////////////////////////////////
-
-        // Create a coverage_report file, fix line feed issues on shell script
-        await ssh(`cd ${project_dir}/test-output/ && touch coverage_report && sed -i -e 's/\r$//' /bakerx/lib/scripts/coverage_report.sh`, context);
-
-        for (const u of this.snapshots.collect) {
-            let filename = u.slice(u.lastIndexOf("/") + 1);
-            let png_name = `${filename}.png`
-            await ssh(`cd ${project_dir}/test-output/ && /bakerx/lib/scripts/coverage_report.sh ${png_name} '${filename}*' ${this.num_iterations} | tee -a coverage_report`, context);
+        let glob_cmd_str = "";
+        for ( let g of this.to_mutate ) {
+            if (glob_cmd_str.length != 0) {
+                glob_cmd_str += " ";
+            }
+            glob_cmd_str += `"${g}"`;
         }
 
-        await ssh(`cd ${project_dir} && mkdir -p /bakerx/output && cp test-output/* /bakerx/output`, context); // Copy test files to host
-
+        await ssh(`/bakerx/support/run_mutations.sh -c "${this.command}" -o "/bakerx/output" -p "${project_dir}" -n "${this.num_iterations} ${url_cmd_str} ${glob_cmd_str}`, context);
     }
 }
 

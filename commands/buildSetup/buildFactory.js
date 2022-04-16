@@ -36,10 +36,8 @@ class BuildFactory {
                         step.mutation.mutate, 
                         step.mutation.iterations, 
                         step.mutation.init ?? false,
-                        new Snapshot(
-                            step.mutation.snapshot.run,
-                            step.mutation.snapshot.collect
-                        )
+                        step.mutation.snapshot.run,
+                        step.mutation.snapshot.collect
                     ));
                 } else {
                     steps.push(new Step(step.name, step.run));
