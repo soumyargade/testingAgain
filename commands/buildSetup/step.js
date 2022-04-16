@@ -64,7 +64,7 @@ class Mutation extends Step {
             await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
-        await ssh(`sed -i -e 's/\r$//' /bakerx/support/run_mutations.sh > ~/run_mutations.sh && chmod +x ~/run_mutations.sh`, context);
+        await ssh(`sed -e 's/\r$//' /bakerx/support/run_mutations.sh > ~/run_mutations.sh && chmod +x ~/run_mutations.sh`, context);
 
         let url_cmd_str = "";
         for ( let u of this.collect ) {
