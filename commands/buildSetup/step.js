@@ -68,7 +68,7 @@ class Mutation extends Step {
         // Create a test output folder and a backup folder
         await ssh(`cd ${project_dir} && mkdir test-output backup`, context);
         // Rewrite the files with escodegen so they can be more easily compared to the mutated files
-        await ssh(`cd ${project_dir} && for f in ${this.to_mutate}; do node /bakerx/support/index.js mutate -f none -o $f $f; done && cp ${this.to_mutate} backup`, context);
+        await ssh(`cd ${project_dir} && find -maxdepth 0 -name "${this.to_mutate}" -type f -exec node /bakerx/support/index.js mutate -f none -o "{}" "{}" \\; && cp ${this.to_mutate} backup`, context);
 
         // run original code and collect snapshots
         await this.snapshots.execute(context, project_dir, '');
@@ -78,10 +78,10 @@ class Mutation extends Step {
             // Run mutation code on the remote node.
             //await ssh(`cd ${project_dir} && cp ${this.to_mutate} backup`, context); // Backup the files we're going to mutate
 
-            await ssh(`cd ${project_dir} && for f in ${this.to_mutate}; do node /bakerx/support/index.js mutate -o $f $f; done`, context); // Mutate the file(s)
+            await ssh(`cd ${project_dir} && find -maxdepth 0 -name "${this.to_mutate}" -exec node /bakerx/support/index.js mutate -o "{}" "{}" \\;`, context); // Mutate the file(s)
             await this.snapshots.execute(context, project_dir, i);             // Run the mutated file(s) and collect the snapshots
             // Save mutated files in test-output and restore the original files
-            await ssh(`cd ${project_dir} && for f in ${this.to_mutate}; do mv $f test-output/"$f".${i}; done && cp backup/${this.to_mutate} ./`, context);
+            await ssh(`set -x && cd ${project_dir} && ls -al && find -maxdepth 0 -name "${this.to_mutate}" -exec mv {} "test-output/{}.${i}" \\; && cp backup/${this.to_mutate} ./`, context);
             // await ssh(`cd ${project_dir} && mv ${this.to_mutate} test-output/${this.to_mutate}.${i} && mv ${this.to_mutate}.backup ${this.to_mutate}`, context);
         }
 
@@ -106,7 +106,7 @@ class Mutation extends Step {
             await ssh(`cd ${project_dir}/test-output/ && /bakerx/lib/scripts/coverage_report.sh ${png_name} '${filename}*' ${this.num_iterations} | tee -a coverage_report`, context);
         }
 
-        await ssh(`cd ${project_dir} && mkdir /bakerx/output && cp test-output/* /bakerx/output`, context); // Copy test files to host
+        await ssh(`cd ${project_dir} && mkdir -p /bakerx/output && cp test-output/* /bakerx/output`, context); // Copy test files to host
 
     }
 }
