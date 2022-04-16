@@ -27,7 +27,11 @@ A issue we were running into was figuring out how to parse the variables present
 In order to ensure the build environment is clean after a build, we decided to create folders with specific names in which different build jobs will be run. This folder name is written to the environment variables in `job.js`. We decided to have the MySQL instance be set up & run in a docker container with the root password being set as part of the command. Near the end of the milestone, we made a few stylistic changes that included removing logging of potentially sensitive information (useful for when recording the screencast) & did some refactoring such that the four classes previously present in `build.js` got moved into their own files.
 
 ## Running the Code M2
-1. Insert Here.
+1. Clone the repo & create a `.env` file containing the fields specified above.
+2. Run `npm install` to install the necessary dependencies.
+3. Run `node index.js init` to provision & configure the VM.
+4. Run `node index.js build itrust-build build.yml`.
+5. Run `node index.js build mutation-coverage build.yml`.
 
 ## Running the Code M1
 1. Clone the repo & create a `.env` file containing the fields specified above.
