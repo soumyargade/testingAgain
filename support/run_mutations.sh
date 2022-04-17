@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 usage() {
     cat << 'EOF'
 $0 [OPTIONS] [GLOB_0 [GLOB_1 [... GLOB_N]]]
@@ -57,10 +59,11 @@ run_step () {
     # Wait until the node server is actually listening, do this by polling `lsof`
     # until a command with the $server_pid is listening on port 3000. This is hacky, but 
     # seems to be effective.
-    MAX_RETRIES=50
+    MAX_RETRIES=100
     local retries=0
     while ! lsof -nP -iTCP -sTCP:LISTEN | grep -q "${server_pid}.*3000"; do 
         test $retries -le $MAX_RETRIES || break
+        sleep 0.1
         ((retries+=1))
     done
 
@@ -79,7 +82,7 @@ coverage_report () {
         local -i file_mutations=0
         for f in "${OUTDIR}"/"${u}"*; do
             ((file_count+=1))
-           if cmp -q "${OUTDIR}/$pic_name" "${OUTDIR}/$f"; then
+           if cmp --quiet "${OUTDIR}/$pic_name" "${OUTDIR}/$f"; then
                cmp "$pic_name" "$f"
                ((file_mutations+=1))
            fi
@@ -92,15 +95,16 @@ coverage_report () {
     done
 }
 
+declare -r EOL='\01\03\03\07'
+
 if [ "$#" != 0 ]; then
-    EOL='\01\03\03\07'
     set -- "$@" "$EOL"
     while [ "$1" != "$EOL" ]; do
         opt="$1"; shift
         case "$opt" in
 
             # OPTIONS
-            -u) assert_argument "$1" "$opt"; URLS[${#URLS[@]}]="$!"; shift;;
+            -u) assert_argument "$1" "$opt"; URLS[${#URLS[@]}]="$1"; shift;;
             -c) assert_argument "$1" "$opt"; CMD="$1"; shift;;
             -o) assert_argument "$1" "$opt"; OUTDIR="$1"; shift;;
             -p) assert_argument "$1" "$opt"; PROJDIR="$1"; shift;;
@@ -119,7 +123,6 @@ fi
 GLOBS=("$@")
 declare -r BACKUP="${PROJDIR}/backup"
 
-set -x
 
 cd "$PROJDIR" || exit
 
@@ -127,6 +130,10 @@ mkdir -p "$OUTDIR" "$BACKUP"
 
 # Rewrite the files with escodegen so they can be more easily compared to the mutated files
 for g in "${GLOBS[@]}"; do
+    if [ "$g" == "$EOL" ]; then
+        continue
+    fi
+
     find "$PROJDIR" -maxdepth 0 -name "$g" -type f -exec node /bakerx/support/index.js mutate -f none -o "{}" "{}" \;
     cp "$g" "$BACKUP"
 done
@@ -139,6 +146,9 @@ for (( i=0; i<=ITERATIONS; i++ )); do
 
     # record code-diffs for this iteration
     for g in "${GLOBS[@]}"; do
+        if [ "$g" == "$EOL" ]; then
+            continue
+        fi
         find "$PROJDIR" -maxdepth 0 -name "${g}" -type f -exec bash -c "diff \"{}\" \"$BACKUP/{}\" >> \"$OUTPUT/iteration_${i}.diff\"" ";"
         # Restore the originals
         cp "$BACKUP/${g}" "$PROJDIR"

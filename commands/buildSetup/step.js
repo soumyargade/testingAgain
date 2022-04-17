@@ -82,7 +82,7 @@ class Mutation extends Step {
             glob_cmd_str += `"${g}"`;
         }
 
-        await ssh(`sudo ~/run_mutations.sh -c "${this.command}" -o "/bakerx/output" -p "${project_dir}" -n "${this.num_iterations}" ${url_cmd_str} ${glob_cmd_str}`, context);
+        await ssh(`sudo ~/run_mutations.sh -c '${this.command}' -o "/bakerx/output" -p "${project_dir}" -n "${this.num_iterations}" ${url_cmd_str} ${glob_cmd_str}`, context);
     }
 }
 
