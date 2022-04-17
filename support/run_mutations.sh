@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -x
+#set -x
 
 usage() {
     cat << 'EOF'
@@ -45,7 +45,7 @@ take_snapshots () {
         # copied and modified from https://stackoverflow.com/questions/3162385/how-to-split-a-string-in-shell-and-get-the-last-field
         pic_name="$(echo "$u" | rev | cut -d/ -f1 | rev)"
 
-        node /bakerx/support/index.js screenshot "$u" "${OUTDIR}/${pic_name}${SUFFIX}" & pids+=($!)
+        node /bakerx/support/index.js screenshot "$u" "${OUTDIR}/${pic_name}${SUFFIX}" & pids+=($!) > /dev/null
     done
     # wait for pids modified from https://stackoverflow.com/a/40380837/706796
     wait "${pids[@]}"
@@ -53,7 +53,7 @@ take_snapshots () {
 
 run_step () {
     # Run original code and collect snapshots to compare against
-    $CMD &
+    $CMD > /dev/null &
     local server_pid=$!
 
     # Wait until the node server is actually listening, do this by polling `lsof`
@@ -127,11 +127,13 @@ for g in "$@"; do
     GLOBS+=("$g")
 done
     
-declare -r BACKUP="${PROJDIR}/backup"
+declare -r BACKUP="backup"
 
-killall "node"
+killall "node" > /dev/null
 
 cd "$PROJDIR" || exit
+
+PROJDIR="."
 
 mkdir -p "$OUTDIR" "$BACKUP"
 

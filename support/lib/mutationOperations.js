@@ -3,6 +3,7 @@ const esprima = require("esprima");
 const escodegen = require("escodegen");
 const options = {tokens:true, tolerant: true, loc: true, range: true };
 const fs = require("fs");
+const path = require("path");
 const chalk = require('chalk');
 const glob = require("glob");
 
@@ -29,12 +30,13 @@ class MutationOperations {
                 let rand = MutationOperations.getRandomInt(files.length);
                 filepath = files[rand]
 
-                console.log(chalk.green(`File ${filepath} will be mutated and the results placed into file ${newPath}`));
+                let destination = path.join(newPath, path.parse(filepath).base);
+                console.log(chalk.green(`File ${filepath} will be mutated and the results placed into file ${destination}`));
 
                 var buf = fs.readFileSync(filepath, "utf8");
                 var ast = esprima.parse(buf, options);
                 let code = escodegen.generate(ast);
-                fs.writeFileSync(newPath, code);
+                fs.writeFileSync(destination, code);
         
                 buf = fs.readFileSync(newPath, "utf8");
                 ast = esprima.parse(buf, options);
