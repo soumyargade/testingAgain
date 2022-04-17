@@ -21,3 +21,4 @@ up: |
   cd /bakerx/support
   npm install  
   npm link
+  chmod +x /bakerx/lib/scripts/coverage_report.sh

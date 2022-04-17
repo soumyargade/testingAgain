@@ -49,12 +49,12 @@ class Snapshot {
     }
 }
 class Mutation extends Step {
-    constructor(name, files_to_mutate, iterations, init, snapshots) {
-        super(name);
+    constructor(name, files_to_mutate, iterations, init, command, collect) {
+        super(name, command);
         this.to_mutate = files_to_mutate;
         this.num_iterations = iterations;
         this.init = init;
-        this.snapshots = snapshots;
+        this.collect = collect;
     }
 
     async execute(context, project_dir) {
@@ -64,16 +64,25 @@ class Mutation extends Step {
             await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
-        await ssh(`mkdir ${project_dir}/test-output/`, context);
+       await ssh(`cp /bakerx/support/run_mutations.sh ./run_mutations.sh && cp /bakerx/support/sed.sh ./sed.sh && ./sed.sh && chmod +x ./run_mutations.sh`, context);
 
-        // run original code and collect snapshots
-        await this.snapshots.execute(context, project_dir, '');
-        for(let i = 0; i < this.num_iterations; i++) {
-            // Run mutation code on the remote node. A hidden folder is to prevent compounded, recursive copying.
-            await ssh(`cd ${project_dir} && node /bakerx/support/index.js mutate -o ${'test-output/' + this.to_mutate + '.' + i} '${this.to_mutate}'`, context);
-            // Run the command in the mutated code directory and collect the snapshots
-            await this.snapshots.execute(context, project_dir, i);
+        let url_cmd_str = "";
+        for ( let u of this.collect ) {
+            if (url_cmd_str.length != 0) {
+                url_cmd_str += " ";
+            }
+            url_cmd_str += `-u "${u}"`;
         }
+
+        let glob_cmd_str = "";
+        for ( let g of this.to_mutate ) {
+            if (glob_cmd_str.length != 0) {
+                glob_cmd_str += " ";
+            }
+            glob_cmd_str += `"${g}"`;
+        }
+
+        await ssh(`sudo ~/run_mutations.sh -c '${this.command}' -o "/bakerx/output" -p "${project_dir}" -n "${this.num_iterations}" ${url_cmd_str} ${glob_cmd_str}`, context);
     }
 }
 
