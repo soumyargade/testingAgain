@@ -19,6 +19,8 @@ We first worked on generating initial baseline snapshots of the files in the tes
 
 Our initial implementation of the test harness was creating a separate folder for each round of mutations (labelled something like mutation0, mutation1, etc.) but we later switched to having a single `test-output` folder to hold the results of each mutation. This folder includes the initial baseline snapshots (labelled `long.md.png`, `survey.md.png`, etc.) as well as the snapshots generated with the mutated code (labelled `long.md0.png`, `surveymd0.png`, etc. with the number at the end of the file name increasing with each round of mutations). The images which illustrate the difference in baseline versus mutated snapshot are also stored in the `test-output` folder labeled as `variations.md.png`, `variations.md0.png`, etc.
 
+One of the issues we ran into involved being able to fork the `node index.js` process on the guest as once we started the microservice it was hanging waiting on the previously run `ssh` command to return. This was solved by running `ssh` through a newly added `cp.spawn` command as opposed to through `cp.exec`. We also modified a few function calls to create the directory & start the microservice as a background process in order to avoid having other processes waiting for it to return to start. 
+
 ## Milestone Report M1
 [`CHECKPOINT-M1.md`](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/CHECKPOINT-M1.md) details our team progress & issues faced all the way up until **March 2**.
 
