@@ -21,6 +21,8 @@ Our initial implementation of the test harness was creating a separate folder fo
 
 One of the issues we ran into involved being able to fork the `node index.js` process on the guest as once we started the microservice it was hanging waiting on the previously run `ssh` command to return. This was solved by running `ssh` through a newly added `cp.spawn` command as opposed to through `cp.exec`. We also modified a few function calls to create the directory & start the microservice as a background process in order to avoid having other processes waiting for it to return to start. Another issue involved trying to debug the cause of certain `ERR_CONNECTION_REFUSED` & `MODULE_NOT_FOUND` error which were popping up repeatedly in the build output. The solution involved measures such as adding a `sleep` command in various locations (ex: prior to taking snapshots) & modifying the way in which we were passing arguments to the `spawn` command.
 
+Because of the massive number of files within the single output directory, we decided to once again use the mutation iteration folders within the output directory. The root of the output directory contains the files from the unmutated original file and the sub directories contain the output and mutated files for each iterations. The details of what were changed can be found the the `mutations.log` file in the root of the output directory. A report with the coverage statistics can also be found in the root of the output directory. 
+
 ## Milestone Report M1
 [`CHECKPOINT-M1.md`](https://github.ncsu.edu/CSC-DevOps-S22/DEVOPS-10/blob/main/CHECKPOINT-M1.md) details our team progress & issues faced all the way up until **March 2**.
 
@@ -34,7 +36,7 @@ In order to ensure the build environment is clean after a build, we decided to c
 1. Clone the repo & create a `.env` file containing the fields specified above.
 2. Run `npm install` to install the necessary dependencies.
 3. Run `node index.js init` to provision & configure the VM.
-4. Run `node index.js build itrust-build build.yml`.
+4. Run `node index.js build itrust-build build.yml`. (optional)
 5. Run `node index.js build mutation-coverage build.yml`.
 
 ## Running the Code M1
