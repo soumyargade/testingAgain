@@ -45,7 +45,7 @@ take_snapshots () {
         # copied and modified from https://stackoverflow.com/questions/3162385/how-to-split-a-string-in-shell-and-get-the-last-field
         pic_name="$(echo "$u" | rev | cut -d/ -f1 | rev)"
 
-        node /bakerx/support/index.js screenshot "$u" "${OUTDIR}/${iteration}/${pic_name}" & pids+=($!) > /dev/null
+        node /bakerx/support/index.js screenshot "$u" "${OUTDIR}/${iteration}/${pic_name}" &> /dev/null & pids+=($!)
     done
     # wait for pids modified from https://stackoverflow.com/a/40380837/706796
     wait "${pids[@]}"
@@ -70,7 +70,7 @@ run_step () {
 
     take_snapshots "$iteration"
 
-    kill "$server_pid"
+    kill "$server_pid" &> /dev/null
 }
 
 coverage_report () {
@@ -145,7 +145,12 @@ for g in "${GLOBS[@]}"; do
     fi
 
     find "$PROJDIR" -maxdepth 0 -name "$g" -type f -exec node /bakerx/support/index.js mutate -f none -o "{}" "{}" \;
+
     cp "$g" "$BACKUP"
+
+    for f in "${g}"; do 
+        cp "$f" "$OUTDIR/${f}"
+    done
 done
 
 run_step
@@ -154,7 +159,7 @@ for (( i=1; i<=ITERATIONS; i++ )); do
     mkdir -p "$OUTDIR/${i}"
 
     echo "" >> "$OUTDIR/mutations.log"
-    echo "=== Iteration ${i} ===" >> "$OUTDIR/mutations.log"
+    echo "=== Iteration ${i} ===" | tee -a "$OUTDIR/mutations.log"
     node /bakerx/support/index.js mutate -o "${PROJDIR}" "${GLOBS[@]}" | tee -a "$OUTDIR/mutations.log"
 
     run_step "$i"
