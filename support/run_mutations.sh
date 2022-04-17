@@ -159,7 +159,7 @@ for (( i=1; i<=ITERATIONS; i++ )); do
         if [ "$g" == "$EOL" ]; then
             continue
         fi
-        find "$PROJDIR" -maxdepth 0 -name "${g}" -type f -exec bash -c "diff \"{}\" \"$BACKUP/{}\" >> \"$OUTDIR/iteration_${i}.diff\"" ";"
+        find "$PROJDIR" -maxdepth 0 -name "${g}" -type f -exec cp "{}" "$OUTDIR/{}${i}" \; 
         # Restore the originals
         cp "$BACKUP/${g}" "$PROJDIR"
     done

@@ -38,7 +38,7 @@ class MutationOperations {
                 let code = escodegen.generate(ast);
                 fs.writeFileSync(destination, code);
         
-                buf = fs.readFileSync(newPath, "utf8");
+                buf = fs.readFileSync(destination, "utf8");
                 ast = esprima.parse(buf, options);
                 
                 let opIdx = MutationOperations.getRandomInt(MutationOperations.operations.length);
@@ -60,7 +60,7 @@ class MutationOperations {
                 op(ast);
         
                 code = escodegen.generate(ast);
-                fs.writeFileSync( newPath, code);
+                fs.writeFileSync( destination, code);
             } catch (err) {
                 console.log(err);
             }
