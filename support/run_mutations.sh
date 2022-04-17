@@ -53,7 +53,7 @@ take_snapshots () {
 
 run_step () {
     # Run original code and collect snapshots to compare against
-    eval "$CMD" &
+    $CMD &
     local server_pid=$!
 
     # Wait until the node server is actually listening, do this by polling `lsof`
@@ -78,11 +78,11 @@ coverage_report () {
         local filename
         filename="$(echo "$u" | rev | cut -d/ -f1 | rev)"
         local pic_name="$filename.png"
-        local -i file_count=-1
+        local -i file_count=0
         local -i file_mutations=0
-        for f in "${OUTDIR}"/"${u}"*; do
+        for f in "${OUTDIR}"/"${filename}"*; do
             ((file_count+=1))
-           if cmp --quiet "${OUTDIR}/$pic_name" "${OUTDIR}/$f"; then
+           if cmp --quiet "${OUTDIR}/$pic_name" "$f"; then
                cmp "$pic_name" "$f"
                ((file_mutations+=1))
            fi
@@ -104,7 +104,7 @@ if [ "$#" != 0 ]; then
         case "$opt" in
 
             # OPTIONS
-            -u) assert_argument "$1" "$opt"; URLS[${#URLS[@]}]="$1"; shift;;
+            -u) assert_argument "$1" "$opt"; URLS+=("$1"); shift;;
             -c) assert_argument "$1" "$opt"; CMD="$1"; shift;;
             -o) assert_argument "$1" "$opt"; OUTDIR="$1"; shift;;
             -p) assert_argument "$1" "$opt"; PROJDIR="$1"; shift;;
@@ -120,9 +120,16 @@ if [ "$#" != 0 ]; then
     done
 fi
 
-GLOBS=("$@")
+for g in "$@"; do 
+    if [ "$g" == "$EOL" ]; then
+        continue
+    fi
+    GLOBS+=("$g")
+done
+    
 declare -r BACKUP="${PROJDIR}/backup"
 
+killall "node"
 
 cd "$PROJDIR" || exit
 
