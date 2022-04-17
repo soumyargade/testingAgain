@@ -3,8 +3,14 @@
 **M2** screencast can be viewed [here](https://drive.google.com/file/d/1W9nbQ9ne_URjutOwgRIg5QyTh2OmraXx/view?usp=sharing).
 
 **M1** screencast can be viewed [here](https://drive.google.com/file/d/1aFCotNPFiHQq-daBrSUp6U9fjBSPcWk4/view?usp=sharing).
+
 ## `.env` File Specifications
-A local `.env` file must be created in the repo folder after the repo is cloned. It must have 3 variables defined in the following format:
+A local `.env` file must be created in the repo folder after the repo is cloned. 
+
+The variables defined must match the mustache-template `{{parameters}}` in the YAML file to be passed to `pipeline build`.
+
+A parameter key of `password` will be assumed to be a github password and special characters will be properly escaped for 
+use in a URL. 
 
 ```bash
 username="unityid"
@@ -12,7 +18,11 @@ token="token"
 root_pass="any_password"
 ```
 
-In order for the build process to successfully clone the iTrust repo from the NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub access token** in the place of "username" and "token". Any password consisting of numbers and letters can be put in the place of "any_password" for the root_pass as this password will be used for configuring the MySQL database.
+In order for the build process to successfully clone the iTrust repo from the 
+NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub access token** 
+in the place of "username" and "token". Any password consisting of numbers and 
+letters can be put in the place of "any_password" for the root_pass as this 
+password will be used for configuring the MySQL database.
 
 ## Milestone Report M2
 We first worked on generating initial baseline snapshots of the files in the test suite which included `long.md`, `survey.md`, `upload.md`, & `variations.md`. This was largely done through following the example implementation of a headless browser image-based snapshot provided in the instructions for this milestone by the teaching staff that made use of the `puppeteer` library. We then implemented eight mutation operators in the newly created file `mutationOperations.js` which include constant replacement, non-empty string, clone return, conditional expression mutation, control flow mutation, conditional boundary mutations, incrementals, & negate conditionals. We added a mutation-coverage job to our `build.yml` which mutates `marqdown.js` for a total of 1000 iterations.
