@@ -2,4 +2,23 @@ name: m1
 image: focal
 memory: 2048
 sync: true
-
+# Bootstrap the mutation and screenshot utility commands
+up: |
+  curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+  apt-get install -y \
+    nodejs \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2
+  cd /bakerx/support
+  npm install  
+  npm link
+  chmod +x /bakerx/lib/scripts/coverage_report.sh
