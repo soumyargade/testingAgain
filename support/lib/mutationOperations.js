@@ -61,7 +61,7 @@ class MutationOperations {
         
                 code = escodegen.generate(ast);
                 fs.writeFileSync( newPath, code);
-            } catch (er) {
+            } catch (err) {
                 console.log(err);
             }
         })
