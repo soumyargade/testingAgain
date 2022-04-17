@@ -39,13 +39,13 @@ assert_argument () {
 }
 
 take_snapshots () {
-    local SUFFIX="$1"
+    local iteration="$1"
     local -a pids
     for u in "${URLS[@]}"; do
         # copied and modified from https://stackoverflow.com/questions/3162385/how-to-split-a-string-in-shell-and-get-the-last-field
         pic_name="$(echo "$u" | rev | cut -d/ -f1 | rev)"
 
-        node /bakerx/support/index.js screenshot "$u" "${OUTDIR}/${pic_name}${SUFFIX}" & pids+=($!) > /dev/null
+        node /bakerx/support/index.js screenshot "$u" "${OUTDIR}/${iteration}/${pic_name}" & pids+=($!) > /dev/null
     done
     # wait for pids modified from https://stackoverflow.com/a/40380837/706796
     wait "${pids[@]}"
@@ -81,7 +81,7 @@ coverage_report () {
         local pic_name="$filename.png"
         local -i file_count=-1
         local -i file_mutations=0
-        for f in "${OUTDIR}"/"${filename}"*; do
+        for f in "${OUTDIR}"/*/"${filename}"*; do
             ((file_count+=1))
            if ! cmp --quiet "${OUTDIR}/$pic_name" "$f"; then
                cmp "${OUTDIR}/$pic_name" "$f"
@@ -151,6 +151,7 @@ done
 run_step
 
 for (( i=1; i<=ITERATIONS; i++ )); do
+    mkdir -p "$OUTDIR/${i}"
     node /bakerx/support/index.js mutate -o "${PROJDIR}" "${GLOBS[@]}"
     run_step "$i"
 
@@ -160,7 +161,7 @@ for (( i=1; i<=ITERATIONS; i++ )); do
             continue
         fi
         for f in "${g}"; do 
-            cp "$f" "$OUTDIR/$f${i}"
+            cp "$f" "$OUTDIR/${i}/${f}"
         done
         # Restore the originals
         cp "$BACKUP/${g}" "$PROJDIR"
