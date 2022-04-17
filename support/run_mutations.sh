@@ -55,6 +55,7 @@ run_step () {
     # Run original code and collect snapshots to compare against
     $CMD > /dev/null &
     local server_pid=$!
+    local iteration="$(echo "$1" || "")"
 
     # Wait until the node server is actually listening, do this by polling `lsof`
     # until a command with the $server_pid is listening on port 3000. This is hacky, but 
@@ -67,7 +68,7 @@ run_step () {
         ((retries+=1))
     done
 
-    take_snapshots "0"
+    take_snapshots "$iteration"
 
     kill "$server_pid"
 }
@@ -78,12 +79,12 @@ coverage_report () {
         local filename
         filename="$(echo "$u" | rev | cut -d/ -f1 | rev)"
         local pic_name="$filename.png"
-        local -i file_count=0
+        local -i file_count=-1
         local -i file_mutations=0
         for f in "${OUTDIR}"/"${filename}"*; do
             ((file_count+=1))
-           if cmp --quiet "${OUTDIR}/$pic_name" "$f"; then
-               cmp "$pic_name" "$f"
+           if ! cmp --quiet "${OUTDIR}/$pic_name" "$f"; then
+               cmp "${OUTDIR}/$pic_name" "$f"
                ((file_mutations+=1))
            fi
         done
@@ -129,7 +130,7 @@ done
     
 declare -r BACKUP="backup"
 
-killall "node" > /dev/null
+killall "node" > /dev/null 2>&1
 
 cd "$PROJDIR" || exit
 
@@ -149,16 +150,16 @@ done
 
 run_step
 
-for (( i=0; i<=ITERATIONS; i++ )); do
+for (( i=1; i<=ITERATIONS; i++ )); do
     node /bakerx/support/index.js mutate -o "${PROJDIR}" "${GLOBS[@]}"
-    run_step
+    run_step "$i"
 
     # record code-diffs for this iteration
     for g in "${GLOBS[@]}"; do
         if [ "$g" == "$EOL" ]; then
             continue
         fi
-        find "$PROJDIR" -maxdepth 0 -name "${g}" -type f -exec bash -c "diff \"{}\" \"$BACKUP/{}\" >> \"$OUTPUT/iteration_${i}.diff\"" ";"
+        find "$PROJDIR" -maxdepth 0 -name "${g}" -type f -exec bash -c "diff \"{}\" \"$BACKUP/{}\" >> \"$OUTDIR/iteration_${i}.diff\"" ";"
         # Restore the originals
         cp "$BACKUP/${g}" "$PROJDIR"
     done
