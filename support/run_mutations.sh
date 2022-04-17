@@ -152,7 +152,11 @@ run_step
 
 for (( i=1; i<=ITERATIONS; i++ )); do
     mkdir -p "$OUTDIR/${i}"
-    node /bakerx/support/index.js mutate -o "${PROJDIR}" "${GLOBS[@]}"
+
+    echo "" >> "$OUTDIR/mutations.log"
+    echo "=== Iteration ${i} ===" >> "$OUTDIR/mutations.log"
+    node /bakerx/support/index.js mutate -o "${PROJDIR}" "${GLOBS[@]}" | tee -a "$OUTDIR/mutations.log"
+
     run_step "$i"
 
     # record code-diffs for this iteration
