@@ -29,8 +29,11 @@ class BuildFactory {
 
         for(const job of this.doc.jobs) {
             let j = new Job(job.name, job.repo);
-            for(const [stage, obj] of job.entries()) {
+            for(const [stage, obj] of Object.entries(job)) {
                 switch (stage) {
+                    case "name":
+                    case "repo":
+                        break;
                     case "build":
                         j.build(obj);
                         break;
