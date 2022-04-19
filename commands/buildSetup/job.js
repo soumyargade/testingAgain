@@ -1,21 +1,32 @@
 const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
 
-const Step = require('./step');
+const {Step, Mutation, Snapshot} = require('./step');
+const {Setup} = require('./setup');
+const { ThrowStatement } = require('esprima');
 
 const Env = process.env;
 
 class Stage {
     constructor(obj) {
-        this.setup = obj.setup;
+        if (obj.hasOwnProperty("setup")) {
+            let steps = new Array();
+            for(const setup of obj.setup) {
+                for(const step of setup.steps) {
+                    let s = new Step(step.name, step.run);
+                    steps.push(s);
+                }
+            }
+            this.setup = new Setup(obj.setup.name, steps);
+        }
     }
-
-    async execute(context, job_loc);
 }
 
 class BuildStage extends Stage {
     constructor(obj) {
         super(obj);
+        let build_steps = new Array();
+
         for(const step of obj.steps) {
             if (step.hasOwnProperty("mutation")) {
                 build_steps.push(new Mutation(
@@ -30,18 +41,20 @@ class BuildStage extends Stage {
                 build_steps.push(new Step(step.name, step.run));
             }
         }
-        this.steps = obj.steps;
+        this.steps = build_steps;
     }
 
     async execute(context, job_loc) {
-        console.log(` Setting up to build...`);
-        this.setup.execute(context, job_loc);
-        console.log(` Set-up complete.`);
+        if(this.hasOwnProperty("setup")) {
+            console.log(` Setting up to build...`);
+            await this.setup.execute(context, job_loc);
+            console.log(` Set-up complete.`);
+        }
 
         console.log(` Starting build...`);
         for( let [index, step] of this.steps.entries() ) {
             console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
-            step.execute(context, job_loc);
+            await step.execute(context, job_loc);
         }
         console.log(` Build complete.`);
     }
@@ -56,20 +69,24 @@ class DeployStage extends Stage {
     }
 
     async execute(context, job_loc) {
-        console.log(` Setting up to deploy...`);
-        this.setup.execute(context, job_loc);
-        console.log(` Set-up complete.`);
+        if(this.hasOwnProperty("setup")) {
+            console.log(` Setting up to deploy...`);
+            await this.setup.execute(context, job_loc);
+            console.log(` Set-up complete.`);
+        }
 
         console.log(` Deploying artifacts...`);
-        this.artifacts.place(context, job_loc);
+        await this.artifacts.place(context, job_loc); //TODO
         console.log(` Artifacts deployed.`);
 
-        console.log(` Initializing deployment...`);
-        this.init.execute();
-        console.log(` Initialization complete.`);
+        if(this.hasOwnProperty("init")) {
+            console.log(` Initializing deployment...`);
+            await this.init.execute();// TODO
+            console.log(` Initialization complete.`);
+        }
 
         console.log(` Starting deployed server...`);
-        this.run.execute();
+        await this.run.execute(); //TODO
         console.log(` Deployed server started.`);
     }
 }
@@ -80,18 +97,18 @@ class Job {
         this.name = name;
         this._build = build;
         this.repo = repo;
-        this.job_loc = `${this.name}_${(new Date()).getTime()}`;
+        this.job_loc = `${this.name}`;
         this._deploy = deploy;
     }
 
-    function build(build) {
+    build(build) {
         this._build = new BuildStage(build);
         return this;
     }
 
-    function deploy(deploy) {
-        this._deploy = deploy
-        return this
+    deploy(deploy) {
+        this._deploy = deploy;
+        return this;
     }
 
     async runBuild(context) {
@@ -99,9 +116,9 @@ class Job {
         console.log(`Cloning repo...`);
         await ssh(`git clone ${mustache.render(this.repo, Env)} ${this.job_loc}`, context, false, this.repo);
         console.log(`Repo cloned.`);
-        console.log(`Building job "${this.name}" (${this.steps.length} steps)...`);
+        console.log(`Building job "${this.name}" (${this._build.steps.length} steps)...`);
         try {
-            this._build.execute(context, job_loc);
+            await this._build.execute(context, this.job_loc);
         } catch (e) {
             throw `Unable to build job "${this.name}". ${e}`;
         }
@@ -111,7 +128,7 @@ class Job {
     async runDeploy(context) {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Deploying job "${this.name}"...`);
-        this._deploy.execute(context, job_loc);
+        await this._deploy.execute(context, job_loc);
         console.log(`Deployment complete.`);
     }
 }

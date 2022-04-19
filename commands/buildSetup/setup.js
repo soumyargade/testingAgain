@@ -4,7 +4,7 @@ class Setup {
         this.steps = steps;
     }
 
-    async runSteps(context) {
+    async execute(context) {
         console.log(`Running setup "${this.name}" (${this.steps.length} steps)`);
         for (const [index, step] of this.steps.entries()) {
             try {
