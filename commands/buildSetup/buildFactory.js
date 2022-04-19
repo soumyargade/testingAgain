@@ -28,22 +28,20 @@ class BuildFactory {
         }
 
         for(const job of this.doc.jobs) {
-            let steps = new Array();
-            for(const step of job.steps) {
-                if (step.hasOwnProperty("mutation")) {
-                    steps.push(new Mutation(
-                        step.name, 
-                        step.mutation.mutate, 
-                        step.mutation.iterations, 
-                        step.mutation.init ?? false,
-                        step.mutation.snapshot.run,
-                        step.mutation.snapshot.collect
-                    ));
-                } else {
-                    steps.push(new Step(step.name, step.run));
+            let j = new Job(job.name, job.repo);
+            for(const [stage, obj] of job.entries()) {
+                switch (stage) {
+                    case "build":
+                        j.build(obj);
+                        break;
+                    case "deploy":
+                        j.deploy(obj);
+                        break;
+                    default:
+                        throw `Stage type "${stage}" was not recognized`;
                 }
             }
-            this.jobs.set(job.name, new Job(job.name, job.repo, steps));
+            this.jobs.set(job.name, j);
         }
     }
 }
