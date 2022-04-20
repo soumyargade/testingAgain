@@ -34,7 +34,11 @@
         }
     },
     "variables": {
-        "publicIPAddressName": "publicIP",
+        "publicIPAddressName_prefix": "publicIP",
+        "publicIPAddressNameLb": "[concat(variables('publicIPAddressName_prefix'), '_lb')]",
+        "publicIPAddressName0": "[concat(parameters('virtual_machine0_name'), '_', variables('publicIPAddressName_prefix'))]",
+        "publicIPAddressName1": "[concat(parameters('virtual_machine1_name'), '_', variables('publicIPAddressName_prefix'))]",
+
         "location": "eastus",
         "virtualNetworkName": "rg0-vnet",
         "loadBalancerName": "rg0_lb",
@@ -74,7 +78,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-11-01",
-            "name": "[variables('publicIPAddressName')]",
+            "name": "[variables('publicIPAddressNameLb')]",
             "location": "[variables('location')]",
             "sku": {
                 "name": "Standard",
@@ -85,6 +89,34 @@
                 "publicIPAllocationMethod": "Static"
             }
         },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('publicIPAddressName0')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('publicIPAddressName1')]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static"
+            }
+        },        
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-11-01",
@@ -289,7 +321,8 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_name'))]",
-                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]"
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName0'))]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -298,6 +331,9 @@
                         "properties": {
                             "privateIPAddress": "10.0.0.4",
                             "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName0'))]"
+                            },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
                             },
@@ -327,7 +363,8 @@
                 "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_name'))]",
-                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]"
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName1'))]"                
             ],
             "properties": {
                 "ipConfigurations": [
@@ -336,14 +373,17 @@
                         "properties": {
                             "privateIPAddress": "10.0.0.5",
                             "privateIPAllocationMethod": "Static",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName1'))]"
+                            },                            
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
                             },
-                            "loadBalancerBackendAddressPools": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
-                                }
-                            ],
+                            // "loadBalancerBackendAddressPools": [
+                            //     {
+                            //         "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
+                            //     }
+                            // ],
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
                         }
@@ -379,14 +419,14 @@
             },
             "dependsOn": [
                 "[variables('virtualNetworkName')]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressNameLb'))]"
             ],
             "properties": {
                 "frontendIPConfigurations": [
                     {
                         "properties": {
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressNameLb'))]"
                             }
                         },
                         "name": "LoadBalancerFrontend"

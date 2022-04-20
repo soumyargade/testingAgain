@@ -9,45 +9,55 @@ sshPublicKey=$(cat ~/.ssh/id_rsa.pub) &&
 
 az login --service-principal --username 5877c0e5-9640-4803-9b1d-e5a35a93fd6d --password $1 --tenant 97ee7d11-b45f-4b10-8d7d-e180450fe17e
 
-# az group create --name $resourceGroupName --location $location &&
+az group create --name $resourceGroupName --location $location &&
 
 # Create the infrastructure contained in arm_template.json
-# az deployment group create \
-#   --name CSC519-DevOps-M3 \
-#   --resource-group $resourceGroupName \
-#   --template-file /bakerx/lib/arm_template.json \
-#   --parameters sshPublicKey="$sshPublicKey" &&
+az deployment group create \
+  --name CSC519-DevOps-M3 \
+  --resource-group $resourceGroupName \
+  --template-file /bakerx/lib/arm_template.json \
+  --parameters sshPublicKey="$sshPublicKey" &&
 
-# # Create the mysql container
-# az container create \
-#   --resource-group $resourceGroupName \
-#   --name mysql \
-#   --image mysql:8.0 \
-#   --ports 80 3306 \
-#   --environment-variables MYSQL_ROOT_PASSWORD=$2 \
-#   --vnet rg0-vnet \
-#   --subnet subnet1
+# Install dependencies on the VMs
+az vm run-command invoke \
+  --resource-group $resourceGroupName \
+  -n BlueVM \
+  --command-id RunShellScript \
+  --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven docker.io tomcat9"
 
-# # Install dependencies on the VMs
-# az vm run-command invoke \
-#   --resource-group $resourceGroupName \
-#   -n BlueVM \
-#   --command-id RunShellScript \
-#   --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven"
+az vm run-command invoke \
+  --resource-group $resourceGroupName \
+  -n GreenVM \
+  --command-id RunShellScript \
+  --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven docker.io tomcat9"
 
-# az vm run-command invoke \
-#   --resource-group $resourceGroupName \
-#   -n GreenVM \
-#   --command-id RunShellScript \
-#   --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven"
+# Start mysql server on the VMs
+az vm run-command invoke \
+  --resource-group $resourceGroupName \
+  -n BlueVM \
+  --command-id RunShellScript \
+  --scripts "sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=$2 -d mysql:8.0"
 
-blue=$(az vm show --resource-group csc519-devops-rg --name BlueVM --show-details --query '{VMName:name, admin:osProfile.adminUsername}')
-green=$(az vm show --resource-group csc519-devops-rg --name GreenVM --show-details --query '{VMName:name, admin:osProfile.adminUsername}')
+az vm run-command invoke \
+  --resource-group $resourceGroupName \
+  -n GreenVM \
+  --command-id RunShellScript \
+  --scripts "sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=$2 -d mysql:8.0"
+
+blue=$(az vm show --resource-group csc519-devops-rg --name BlueVM --show-details --query '{VMName:name, admin:osProfile.adminUsername, IP:publicIps}')
+green=$(az vm show --resource-group csc519-devops-rg --name GreenVM --show-details --query '{VMName:name, admin:osProfile.adminUsername, IP:publicIps}')
 
 echo $blue
 echo $green
 
-# az vm show --resource-group $resourceGroupName --name BlueVM --show-details \
-#   --query "{VMName:name, VMStatus:powerState, IPs:publicIps}" \
-#   --output json &&
-# az vm show --resource-group $resourceGroupName --name GreenVM --show-details --query publicIps --output tsv
+# Add GreenVM to load balancer pool
+#az network nic ip-config address-pool add -g csc519-devops-rg --lb-name rg0_lb --address-pool BackendPool1 --ip-config-name ipconfig1 --nic-name GreenVM_nic
+
+# Add BlueVM to load balancer pool
+#az network nic ip-config address-pool add -g csc519-devops-rg --lb-name rg0_lb --address-pool BackendPool1 --ip-config-name ipconfig1 --nic-name BlueVM_nic
+
+# Remove GreenVM from load balancer pool
+# az network nic ip-config address-pool remove -g csc519-devops-rg --lb-name rg0_lb --address-pool BackendPool1 --ip-config-name ipconfig1 --nic-name GreenVM_nic
+
+# Remove BlueVM from load balancer pool
+# az network nic ip-config address-pool remove -g csc519-devops-rg --lb-name rg0_lb --address-pool BackendPool1 --ip-config-name ipconfig1 --nic-name BlueVM_nic
