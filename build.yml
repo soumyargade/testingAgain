@@ -2,7 +2,7 @@ setup:
   - name: build environment
     steps:
       - name: Update
-        run: 'sudo apt-get update -yqq && sleep 30'
+        run: 'sudo apt-get update -yqq && sudo apt-get upgrade -yqq && sleep 30'
 
 jobs:
   - name: itrust-build
@@ -12,7 +12,7 @@ jobs:
         - name: Build environment
           steps:
             - name: Install Dependencies
-              run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io npm'
+              run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io
       steps:
         - name: Setup MySql
           run: 'sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
