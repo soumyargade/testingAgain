@@ -2,36 +2,54 @@ setup:
   - name: build environment
     steps:
       - name: Update
-        run: 'sudo apt-get update -yqq && sleep 30'
-      - name: Install Dependencies
-        run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io npm'
+        run: 'sudo apt-get update -yqq && sudo apt-get upgrade -yqq && sleep 30'
 
 jobs:
   - name: itrust-build
     repo: https://{{username}}:{{token}}@github.ncsu.edu/engr-csc326-staff/iTrust2-v10.git
-    steps:
-      - name: Setup MySql
-        run: 'sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
-      - name: Copy application.yml file
-        run: 'cp {{job_loc}}/iTrust2/src/main/resources/application.yml.template {{job_loc}}/iTrust2/src/main/resources/application.yml'
-      - name: Copy database password into application.yml file
-        run: 'sudo sed -i "s/password\:/password\:\ {{root_pass}}/g" {{job_loc}}/iTrust2/src/main/resources/application.yml'
-      - name: Build iTrust
-        run: 'cd {{job_loc}}/iTrust2/ && mvn --batch-mode --update-snapshots clean test'
-        # run: 'cd {{job_loc}}/iTrust2/ && mvn -q spring-boot:run'
+    build:
+      setup: # NEW
+        - name: Build environment
+          steps:
+            - name: Install Dependencies
+              run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io'
+      steps:
+        - name: Setup MySql
+          run: 'sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
+        - name: Copy application.yml file
+          run: 'cp {{job_loc}}/iTrust2/src/main/resources/application.yml.template {{job_loc}}/iTrust2/src/main/resources/application.yml'
+        - name: Copy database password into application.yml file
+          run: 'sudo sed -i "s/password\:/password\:\ {{root_pass}}/g" {{job_loc}}/iTrust2/src/main/resources/application.yml'
+        - name: Build iTrust
+          run: 'cd {{job_loc}}/iTrust2/ && mvn --batch-mode --update-snapshots clean test'
+    deploy: # NEW
+      setup:
+        steps:
+          - name: Install Dependencies
+            run: 'sudo apt-get install -yqq ...'
+          - name: Setup MySQL
+            run: ''
+      artifacts: 
+        - source: something.war
+          destination: ~/something.war
+        - source: maybe_some_config_file.cfg
+          destination: ~/.config/maybe_some_config_file.cfg
+      init: 'idk something like npm install (in case it is needed)'
+      run: 'itrust run' # I know this isn't right, but you get the idea.
   - name: mutation-coverage
     repo: https://github.com/chrisparnin/checkbox.io-micro-preview
-    steps:
-      - name: Mutation Testing
-        mutation:
-          mutate:
-            - 'marqdown.js'
-          iterations: 1000
-          init: 'npm install'
-          snapshot:
-            run: 'node index.js'
-            collect:
-              - 'http://localhost:3000/survey/long.md'
-              - 'http://localhost:3000/survey/upload.md'
-              - 'http://localhost:3000/survey/survey.md'
-              - 'http://localhost:3000/survey/variations.md'
+    build:
+      steps:
+        - name: Mutation Testing
+          mutation:
+            mutate:
+              - 'marqdown.js'
+            iterations: 1000
+            init: 'npm install'
+            snapshot:
+              run: 'node index.js'
+              collect:
+                - 'http://localhost:3000/survey/long.md'
+                - 'http://localhost:3000/survey/upload.md'
+                - 'http://localhost:3000/survey/survey.md'
+                - 'http://localhost:3000/survey/variations.md'

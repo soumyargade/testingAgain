@@ -30,9 +30,9 @@ exports.handler = async argv => {
         factory.parse();
 
         for (const setup of factory.setup) {
-            await setup.runSteps(json);
+            await setup.execute(json);
         }
-        factory.jobs.get(job_name).runSteps(json);
+        factory.jobs.get(job_name).runBuild(json);
     } catch (e) {
         console.log(chalk.red(e));
     }
