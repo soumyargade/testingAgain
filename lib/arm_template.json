@@ -150,7 +150,8 @@
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm0_nic_name'))]",
-                "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
+                "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]"
             ],
             "properties": {
                 "availabilitySet": {
@@ -209,7 +210,8 @@
             "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm1_nic_name'))]",
-                "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
+                "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]",
+                "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]"                
             ],
             "properties": {
                 "availabilitySet": {
@@ -359,11 +361,11 @@
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
                             },
-                            "loadBalancerBackendAddressPools": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
-                                }
-                            ],
+                            // "loadBalancerBackendAddressPools": [
+                            //     {
+                            //         "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
+                            //     }
+                            // ],
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
                         }
@@ -401,11 +403,11 @@
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
                             },
-                            // "loadBalancerBackendAddressPools": [
-                            //     {
-                            //         "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
-                            //     }
-                            // ],
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
+                                }
+                            ],
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
                         }

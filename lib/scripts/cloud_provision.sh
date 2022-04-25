@@ -23,13 +23,13 @@ az vm run-command invoke \
   --resource-group $resourceGroupName \
   -n BlueVM \
   --command-id RunShellScript \
-  --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven docker.io tomcat9"
+  --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven docker.io"
 
 az vm run-command invoke \
   --resource-group $resourceGroupName \
   -n GreenVM \
   --command-id RunShellScript \
-  --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven docker.io tomcat9"
+  --scripts "apt-get update -y && apt-get install -yqq python3-pip openjdk-11-jdk maven docker.io"
 
 # Start mysql server on the VMs
 az vm run-command invoke \
@@ -44,11 +44,20 @@ az vm run-command invoke \
   --command-id RunShellScript \
   --scripts "sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=$2 -d mysql:8.0"
 
-blue=$(az vm show --resource-group csc519-devops-rg --name BlueVM --show-details --query '{VMName:name, admin:osProfile.adminUsername, IP:publicIps}')
-green=$(az vm show --resource-group csc519-devops-rg --name GreenVM --show-details --query '{VMName:name, admin:osProfile.adminUsername, IP:publicIps}')
+BLUE=$(az vm show --resource-group csc519-devops-rg --name BlueVM --show-details --query '{vmname:name, admin:osProfile.adminUsername, ip:publicIps}')
+GREEN=$(az vm show --resource-group csc519-devops-rg --name GreenVM --show-details --query '{vmname:name, admin:osProfile.adminUsername, ip:publicIps}')
+LBIP=$(az network public-ip show -g $resourceGroupName -n publicIP_lb --query {"lbip:ipAddress"})
 
-echo $blue
-echo $green
+# Create inventory file in JSON format
+touch inventory
+echo "" > inventory
+echo ${LBIP::-1}, >> inventory
+echo \"green\":$GREEN, >> inventory
+echo \"blue\":$BLUE >> inventory
+echo "}" >> inventory
+
+cp inventory /bakerx/inventory
+
 
 # Add GreenVM to load balancer pool
 #az network nic ip-config address-pool add -g csc519-devops-rg --lb-name rg0_lb --address-pool BackendPool1 --ip-config-name ipconfig1 --nic-name GreenVM_nic
