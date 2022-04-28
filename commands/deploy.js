@@ -30,8 +30,8 @@ exports.handler = async _argv => {
 
     try {
         console.log(chalk.green("Loading deployment file onto production servers..."));
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/iTrust2-10.jar ${green.admin}@${green.ip}:`, json);
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, json);
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${green.admin}@${green.ip}:`, json);
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, json);
         
         // Has to be run from the guest so the ssh keys match
         console.log(chalk.green("Starting application on production servers..."));        
