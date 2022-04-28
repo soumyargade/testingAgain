@@ -60,34 +60,20 @@ class BuildStage extends Stage {
     }
 }
 
-class DeployStage extends Stage {
+class DeployStage {
     constructor(obj) {
-        super(obj);
-        this.artifacts = obj.artifacts;
-        this.init = obj.init;
-        this.run = obj.run;
+        let deploy_steps = new Array();
+        for (const step of obj.steps) {
+            deploy_steps.push(new Step(step.name, step.run));
+        }
+        this.steps = deploy_steps;
     }
 
     async execute(context, job_loc) {
-        if(this.hasOwnProperty("setup")) {
-            console.log(` Setting up to deploy...`);
-            await this.setup.execute(context, job_loc);
-            console.log(` Set-up complete.`);
+        for( let [index, step] of this.steps.entries() ) {
+            console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
+            await step.execute(context, job_loc);
         }
-
-        console.log(` Deploying artifacts...`);
-        await this.artifacts.place(context, job_loc); //TODO
-        console.log(` Artifacts deployed.`);
-
-        if(this.hasOwnProperty("init")) {
-            console.log(` Initializing deployment...`);
-            await this.init.execute();// TODO
-            console.log(` Initialization complete.`);
-        }
-
-        console.log(` Starting deployed server...`);
-        await this.run.execute(); //TODO
-        console.log(` Deployed server started.`);
     }
 }
 
@@ -107,7 +93,7 @@ class Job {
     }
 
     deploy(deploy) {
-        this._deploy = deploy;
+        this._deploy = new DeployStage(deploy);
         return this;
     }
 
@@ -128,7 +114,7 @@ class Job {
     async runDeploy(context) {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Deploying job "${this.name}"...`);
-        await this._deploy.execute(context, job_loc);
+        await this._deploy.execute(context, this.job_loc);
         console.log(`Deployment complete.`);
     }
 }
