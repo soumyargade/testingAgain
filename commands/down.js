@@ -6,8 +6,8 @@ const mustache = require('mustache');
 const Env = process.env;
 
 
-exports.command = 'prod up';
-exports.desc = 'Provision Cloud Environment';
+exports.command = 'prod down';
+exports.desc = 'Deprovision Cloud Environment';
 exports.builder = yargs => {
     yargs.options({
     });
@@ -15,7 +15,7 @@ exports.builder = yargs => {
 
 exports.handler = async _argv => {
 
-    console.log(chalk.green("Provisioning Cloud Servers..."));
+    console.log(chalk.green("Deprovisioning Cloud Servers..."));
 
     var obj = cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
@@ -25,12 +25,13 @@ exports.handler = async _argv => {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    //////////////////// PROVISION CLOUD RESOURCES ////////////////////////////
+    //////////////////// DEPROVISION CLOUD RESOURCES //////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     try {
-       await ssh(`/bakerx/lib/scripts/cloud_provision.sh ${mustache.render("{{cloud_pass}}", Env)} ${mustache.render("{{root_pass}}", Env)}`, json);
+        console.log("deprovision");
+//       await ssh(`az group delete -n csc519-devops-rg`, json);
 
     } catch (err) {
-        console.log(chalk.red(`Error running cloud provisioning script \n ${e}`));
+        console.log(chalk.red(`Error running cloud deprovisioning script \n ${e}`));
     }
 }
