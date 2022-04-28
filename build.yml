@@ -28,16 +28,16 @@ jobs:
       setup:
         steps:
           - name: Install Dependencies
-            run: 'sudo apt-get install -yqq ...'
+            run: 'sudo apt-get install -yqq openjdk-11-jdk maven docker.io'
           - name: Setup MySQL
-            run: ''
+            run: sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
       artifacts: 
         - source: something.war
           destination: ~/something.war
         - source: maybe_some_config_file.cfg
           destination: ~/.config/maybe_some_config_file.cfg
       init: 'idk something like npm install (in case it is needed)'
-      run: 'itrust run' # I know this isn't right, but you get the idea.
+      run: 'mvn -q spring-boot:run'
   - name: mutation-coverage
     repo: https://github.com/chrisparnin/checkbox.io-micro-preview
     build:
