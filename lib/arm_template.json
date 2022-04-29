@@ -361,11 +361,6 @@
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
                             },
-                            // "loadBalancerBackendAddressPools": [
-                            //     {
-                            //         "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), 'BackendPool1')]"
-                            //     }
-                            // ],
                             "primary": true,
                             "privateIPAddressVersion": "IPv4"
                         }
