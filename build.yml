@@ -29,7 +29,7 @@ jobs:
         - name: Install Dependencies
           run: 'sudo apt-get install -yqq openjdk-11-jdk maven docker.io'
         - name: Setup MySQL
-          run: sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
+          run: 'sudo docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD={{root_pass}} -d mysql:8.0'
         - name: Start up the project
           run: 'mvn -q spring-boot:run'
   - name: mutation-coverage
