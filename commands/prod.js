@@ -21,23 +21,26 @@ exports.handler = async argv => {
     var json = JSON.parse(obj);
 
     if (direction == "up") {
+        
+        ///////////////////////////////////////////////////////////////////////////
+        //////////////////// PROVISION CLOUD RESOURCES ////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
 
         console.log(chalk.green("Provisioning Cloud Servers..."));
 
         if (!Env.hasOwnProperty("cloud_pass")) {
             throw new Error(`Must have a "cloud_pass" key=value pair in the .env file`);
         }
-
-        ///////////////////////////////////////////////////////////////////////////
-        //////////////////// PROVISION CLOUD RESOURCES ////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////
         try {
-        await ssh(`/bakerx/lib/scripts/cloud_provision.sh ${mustache.render("{{cloud_pass}}", Env)} ${mustache.render("{{root_pass}}", Env)}`, json);
+            await ssh(`/bakerx/lib/scripts/cloud_provision.sh ${mustache.render("{{cloud_pass}}", Env)} ${mustache.render("{{root_pass}}", Env)} ${mustache.render("{{tenent}}", Env)} ${mustache.render("{{cloud_username}}", Env)}`, json);
 
         } catch (err) {
             console.log(chalk.red(`Error running cloud provisioning script \n ${e}`));
         }
     } else if (direction == "down") {
+        ///////////////////////////////////////////////////////////////////////////
+        //////////////////// DEPROVISION CLOUD RESOURCES //////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
         try {
           await ssh(`az group delete -y -n csc519-devops-rg`, json);
     
