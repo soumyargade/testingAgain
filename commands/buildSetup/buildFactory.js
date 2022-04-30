@@ -26,6 +26,7 @@ class BuildFactory {
                         j.build(obj);
                         break;
                     case "deploy":
+                        console.log("in deploy case of buildFactory");
                         j.deploy(obj);
                         break;
                     default:

@@ -48,6 +48,7 @@ class Snapshot {
         await ssh(`killall node`, context);
     }
 }
+
 class Mutation extends Step {
     constructor(name, files_to_mutate, iterations, init, command, collect) {
         super(name, command);

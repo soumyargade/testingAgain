@@ -1,5 +1,8 @@
 const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
+const fs = require('fs');
+const cp = require("child_process");
+const spawn = require('../../lib/exec/spawn');
 
 const {Step, Mutation, Snapshot} = require('./step');
 const {Setup} = require('./setup');
@@ -60,8 +63,9 @@ class BuildStage extends Stage {
     }
 }
 
-class DeployStage {
+class DeployStage extends Stage {
     constructor(obj) {
+        super(obj);
         let deploy_steps = new Array();
         for (const step of obj.steps) {
             deploy_steps.push(new Step(step.name, step.run));
@@ -70,6 +74,24 @@ class DeployStage {
     }
 
     async execute(context, job_loc) {
+
+        var input = fs.readFileSync("inventory", 'utf-8');
+        var inventory = JSON.parse(input);
+        let green = inventory.green;
+        let blue = inventory.blue;
+
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${green.admin}@${green.ip}:`, context);
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, context);
+
+        spawn(`ssh ${green.admin}@${green.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, context)
+        spawn(`ssh ${blue.admin}@${blue.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, context)
+
+        setTimeout((function(){
+            let child = cp.spawn("node index.js healthcheck",[green.ip, blue.ip, inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});
+
+            child.unref();
+        }),6000)
+
         for( let [index, step] of this.steps.entries() ) {
             console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
             await step.execute(context, job_loc);
