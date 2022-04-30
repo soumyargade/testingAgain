@@ -1,6 +1,8 @@
 const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
 const spawn = require('../../lib/exec/spawn');
+const fs = require('fs');
+const cp = require("child_process");
 
 const Env = process.env;
 
@@ -49,6 +51,32 @@ class Snapshot {
     }
 }
 
+class GreenBlue {
+    constructor(name, inventory) {
+        this.name = name;
+        this.file = inventory;
+    }
+
+    async execute(context, project_dir) {
+        var input = fs.readFileSync(`${this.file}`, 'utf-8');
+        var inventory = JSON.parse(input);
+        let green = inventory.green;
+        let blue = inventory.blue;
+        
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${green.admin}@${green.ip}:`, context);
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, context);
+
+        spawn(`ssh ${green.admin}@${green.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, context)
+        spawn(`ssh ${blue.admin}@${blue.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, context)
+
+        setTimeout((function(){
+            let child = cp.spawn("node index.js healthcheck",[green.ip, blue.ip, inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});
+
+            child.unref();
+        }),6000)
+    }
+}
+
 class Mutation extends Step {
     constructor(name, files_to_mutate, iterations, init, command, collect) {
         super(name, command);
@@ -91,4 +119,5 @@ module.exports = {
     Step,
     Mutation,
     Snapshot,
+    GreenBlue,
 };

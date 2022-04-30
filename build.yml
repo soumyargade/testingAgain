@@ -22,8 +22,9 @@ jobs:
           run: 'cd {{job_loc}}/iTrust2/ && mvn package'
     deploy:
       steps:
-        - name: Load deployment file onto green server
-          run: 'sudo apt-get install -yqq openjdk-11-jdk maven docker.io'
+        - name: Load deployment files
+          green_blue:
+            inventory: 'inventory'
   - name: mutation-coverage
     repo: https://github.com/chrisparnin/checkbox.io-micro-preview
     build:
