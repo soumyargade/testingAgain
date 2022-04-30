@@ -7,7 +7,7 @@ fi
 
 sshPublicKey=$(cat ~/.ssh/id_rsa.pub) &&
 
-az login --service-principal --username 5877c0e5-9640-4803-9b1d-e5a35a93fd6d --password $1 --tenant 97ee7d11-b45f-4b10-8d7d-e180450fe17e
+az login --service-principal --username $4 --password $1 --tenant $3
 
 az group create --name $resourceGroupName --location $location &&
 

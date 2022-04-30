@@ -22,4 +22,5 @@ up: |
   npm install  
   npm link
   chmod +x /bakerx/lib/scripts/coverage_report.sh
+  chmod +x /bakerx/lib/scripts/cloud_provision.sh
   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash 
