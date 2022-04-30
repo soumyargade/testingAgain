@@ -52,9 +52,11 @@ class Snapshot {
 }
 
 class GreenBlue {
-    constructor(name, inventory) {
+    constructor(name, inventory, source, jar) {
         this.name = name;
         this.file = inventory;
+        this.source = source;
+        this.jar = jar;
     }
 
     async execute(context, project_dir) {
@@ -63,11 +65,11 @@ class GreenBlue {
         let green = inventory.green;
         let blue = inventory.blue;
         
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${green.admin}@${green.ip}:`, context);
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, context);
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ${this.source} ${green.admin}@${green.ip}:`, context);
+        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ${this.source} ${blue.admin}@${blue.ip}:`, context);
 
-        spawn(`ssh ${green.admin}@${green.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, context)
-        spawn(`ssh ${blue.admin}@${blue.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, context)
+        spawn(`ssh ${green.admin}@${green.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar ${this.jar}`, context)
+        spawn(`ssh ${blue.admin}@${blue.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar ${this.jar}`, context)
 
         setTimeout((function(){
             let child = cp.spawn("node index.js healthcheck",[green.ip, blue.ip, inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});

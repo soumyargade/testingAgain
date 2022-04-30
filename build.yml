@@ -25,6 +25,9 @@ jobs:
         - name: Load deployment files
           green_blue:
             inventory: 'inventory'
+          artifacts:
+            source: '~/itrust-build/iTrust2/target/iTrust2-10.jar'
+            jar: 'iTrust2-10.jar'
   - name: mutation-coverage
     repo: https://github.com/chrisparnin/checkbox.io-micro-preview
     build:

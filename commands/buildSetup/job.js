@@ -70,7 +70,9 @@ class DeployStage extends Stage {
             if (step.hasOwnProperty("green_blue")) {
                 deploy_steps.push(new GreenBlue(
                     step.name,
-                    step.green_blue.inventory
+                    step.green_blue.inventory,
+                    step.artifacts.source,
+                    step.artifacts.jar
                 ));
             } else {
                 deploy_steps.push(new Step(step.name, step.run));
@@ -127,7 +129,6 @@ class Job {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Deploying job "${this.name}"...`);
         await this._deploy.execute(context, this.job_loc);
-        console.log(`Deployment complete.`);
     }
 }
 
