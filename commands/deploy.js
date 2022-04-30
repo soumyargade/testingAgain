@@ -34,14 +34,6 @@ exports.handler = async _argv => {
     let blue = inventory.blue;
 
     try {
-        let factory = new DeployFactory(fs.readFileSync(build_file, 'utf8'))
-        factory.parse();
-        factory.jobs.get(job_name).runDeploy(json);
-    } catch (e) {
-        console.log(chalk.red(e));
-    }
-
-    try {
         console.log(chalk.green("Loading deployment file onto production servers..."));
         await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${green.admin}@${green.ip}:`, json);
         await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/itrust-build/iTrust2/target/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, json);
