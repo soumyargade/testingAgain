@@ -78,10 +78,10 @@ class GreenBlue {
         this.artifacts = new Array();
         this.steps = new Array();
 
-        for (const artifact of obj.artifacts) {
+        for (const artifact of this.artifacts) {
             this.artifacts.push(new Artifact(artifact.source, artifact.dest));
         }
-        for (const step of obj.steps) {
+        for (const step of this.steps) {
             this.steps.push(new Step(step.name, step.run));
         }
 
@@ -90,8 +90,8 @@ class GreenBlue {
         switch (provider) {
             case 'azure':
             case 'local':
-                this.green = Provider(inventory.green);
-                this.blue= Provider(inventory.blue);
+                this.green = new Provider(inventory.green);
+                this.blue= new Provider(inventory.blue);
         }
     }
 

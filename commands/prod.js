@@ -14,7 +14,7 @@ exports.builder = yargs => {
     });
 };
 
-function azure_up(json) {
+async function azure_up(json) {
     try {
         await ssh(`/bakerx/lib/scripts/cloud_provision.sh ${mustache.render("{{cloud_pass}}", Env)} ${mustache.render("{{root_pass}}", Env)} ${mustache.render("{{tenent}}", Env)} ${mustache.render("{{cloud_username}}", Env)}`, json);
 
@@ -23,7 +23,7 @@ function azure_up(json) {
     }
 }
 
-function azure_down(json) {
+async function azure_down(json) {
     try {
         await ssh(`az group delete -y -n csc519-devops-rg`, json);
 
@@ -32,11 +32,11 @@ function azure_down(json) {
     }
 }
 
-function local_up(json) {
+async function local_up(json) {
     //TODO use bakerx to bring up some VMs, save inventory file
 }
 
-function local_down(json) {
+async function local_down(json) {
     //TODO use bakerx to tear down some VMs using implicit "inventory" file, remove inventory file.
 
 }
