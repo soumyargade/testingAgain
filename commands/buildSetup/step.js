@@ -51,25 +51,65 @@ class Snapshot {
     }
 }
 
-class GreenBlue {
-    constructor(name, inventory, source, jar) {
-        this.name = name;
-        this.file = inventory;
-        this.source = source;
-        this.jar = jar;
+class Provider {
+    constructor(machine_info) {
+        this.admin = machine_info.admin;
+        this.ip = machine_info.ip;
     }
 
-    async execute(context, project_dir) {
+    async copy_file(source, dest, context) {
+        ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ${source} ${this.admin}@${this.ip}:${dest}`, context);
+    }
+
+    async run_command(command, context) {
+        spawn(`ssh ${this.admin}@${this.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${command}`, context)
+    }
+}
+class Artifact {
+    constructor(source, dest) {
+        this.source = source;
+        this.dest = dest;
+    }
+}
+class GreenBlue {
+    constructor(name, inventory, provider, artifacts, steps) {
+        this.name = name;
+        this.file = inventory;
+        this.artifacts = new Array();
+        this.steps = new Array();
+
+        for (const artifact of obj.artifacts) {
+            this.artifacts.push(new Artifact(artifact.source, artifact.dest));
+        }
+        for (const step of obj.steps) {
+            this.steps.push(new Step(step.name, step.run));
+        }
+
         var input = fs.readFileSync(`${this.file}`, 'utf-8');
         var inventory = JSON.parse(input);
-        let green = inventory.green;
-        let blue = inventory.blue;
-        
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ${this.source} ${green.admin}@${green.ip}:`, context);
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ${this.source} ${blue.admin}@${blue.ip}:`, context);
+        switch (provider) {
+            case 'azure':
+            case 'local':
+                this.green = Provider(inventory.green);
+                this.blue= Provider(inventory.blue);
+        }
+    }
 
-        spawn(`ssh ${green.admin}@${green.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar ${this.jar}`, context)
-        spawn(`ssh ${blue.admin}@${blue.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar ${this.jar}`, context)
+
+    async execute(context, project_dir) {
+        let copy_futures = new Array();
+        for(const art of this.artifacts) {
+            copy_futures.push(this.green.copy_file(art.source, art.dest, context));
+            copy_futures.push(this.blue.copy_file(art.source, art.dest, context));
+        }
+        await Promise.all(copy_futures);
+
+        for(const step of this.steps) {
+            let step_futures = new Array();
+            step_futures.push(this.green.run_command(this.step.run, context))
+            step_futures.push(this.blue.run_command(this.step.run, context))
+            await Promise.all(step_futures);
+        }
 
         setTimeout((function(){
             let child = cp.spawn("node index.js healthcheck",[green.ip, blue.ip, inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});

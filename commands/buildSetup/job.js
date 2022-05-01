@@ -64,30 +64,18 @@ class BuildStage extends Stage {
 class DeployStage extends Stage {
     constructor(obj) {
         super(obj);
-        let deploy_steps = new Array();
-
-        for (const step of obj.steps) {
-            if (step.hasOwnProperty("green_blue")) {
-                deploy_steps.push(new GreenBlue(
-                    step.name,
-                    step.green_blue.inventory,
-                    step.artifacts.source,
-                    step.artifacts.jar
-                ));
-            } else {
-                deploy_steps.push(new Step(step.name, step.run));
-            }
+        this.type = obj.type ? obj.type : 'green-blue';
+        switch (this.type) {
+            case 'green-blue':
+                this.deployment_scheme = new GreenBlue("", obj.inventory, obj.provider, obj.artifacts, obj.steps);
+                break;
+            default:
+                throw TypeError(`"${this.type}" is not a recognized deployment type.`);
         }
-
-        this.steps = deploy_steps;
     }
 
     async execute(context, job_loc) {
-
-        for( let [index, step] of this.steps.entries() ) {
-            console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
-            await step.execute(context, job_loc);
-        }
+        this.deployment_scheme.execute(context, job_loc);
     }
 }
 
