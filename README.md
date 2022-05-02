@@ -34,7 +34,7 @@ letters can be put in the place of "any_password" for the root_pass as this
 password will be used for configuring the MySQL database.
 
 ## Milestone Report M3
-Our `prod up` command provisions instances with the use of Azure as a cloud provider. It also simulataneously generates an `inventory` file containing connection information for the cloud resources. This information includes the admin name and IP address of the instance & looks something like the following:
+Our `prod up` command provisions two instances & a load balancer with the use of Azure as a cloud provider. It also simulataneously generates an `inventory` file containing connection information for the cloud resources. This information includes the IP address of the load balancer, & the "admin", "ip", & "vmname" of each of the two instances. It looks something like the following:
 
 ```
 { "lbip": "20.85.245.86" ,
@@ -42,6 +42,8 @@ Our `prod up` command provisions instances with the use of Azure as a cloud prov
 "blue":{ "admin": "devopsadmin", "ip": "20.85.246.166", "vmname": "BlueVM" }
 }
 ```
+
+We extended our `itrust-build` job to create a jar file for deployment with the use of the `mvn package` command which creates a `iTrust2-10.jar` in the target directory. One of the issues we ran into was having to frequently ask Tanner to kill previously created instances on his Azure account in order to be able to start the deployment from scratch for testing purposes. This was becoming cumbersome as everyone on the team was using Tanner's Azure credentials so we decided to configure a `prod down` command which could be used to destroy the instances in Azure upon end of use.
 
 ## Milestone Report M2
 We first worked on generating initial baseline snapshots of the files in the test suite which included `long.md`, `survey.md`, `upload.md`, & `variations.md`. This was largely done through following the example implementation of a headless browser image-based snapshot provided in the instructions for this milestone by the teaching staff that made use of the `puppeteer` library. We then implemented eight mutation operators in the newly created file `mutationOperations.js` which include constant replacement, non-empty string, clone return, conditional expression mutation, control flow mutation, conditional boundary mutations, incrementals, & negate conditionals. We added a mutation-coverage job to our `build.yml` which mutates `marqdown.js` for a total of 1000 iterations.
