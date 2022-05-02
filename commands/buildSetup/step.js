@@ -92,8 +92,8 @@ class GreenBlue {
             switch (provider) {
                 case 'azure':
                 case 'local':
-                    this.green = Provider(this.inventory.green);
-                    this.blue = Provider(this.inventory.blue);
+                    this.green = new Provider(this.inventory.green);
+                    this.blue = new Provider(this.inventory.blue);
             }
         } catch (_e) { }
     }
