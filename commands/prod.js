@@ -36,11 +36,12 @@ async function azure_down(json) {
 
 async function local_up(json) {
     //TODO use bakerx to bring up some VMs, save inventory file
+    throw Error("local provisioning is currently unimplemented.");
 }
 
 async function local_down(json) {
     //TODO use bakerx to tear down some VMs using implicit "inventory" file, remove inventory file.
-
+    throw Error("local deprovisioning is currently unimplemented.");
 }
 
 exports.handler = async argv => {
