@@ -61,7 +61,7 @@ In order to ensure the build environment is clean after a build, we decided to c
 4. Run `node index.js build itrust-build build.yml`.
 5. Run `node index.js build mutation-coverage build.yml` (optional).
 6. Run `node index.js prod up itrust-build build.yml` to provision instances on Azure.
-7. Run `node index.js deploy inventory itrust-deploy build.yml` to deploy.
+7. Run `node index.js deploy inventory itrust-deploy build.yml` to deploy. *Note*: You will need to wait 1-2 minutes before running this in order to give time for the instances to be provisioned on Azure from the previous step.
 8. Run `node index.js prod down itrust-build build.yml` to destroy instances (optional).
 
 ## Running the Code M2
