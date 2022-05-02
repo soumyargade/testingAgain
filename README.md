@@ -1,15 +1,19 @@
-# Pipeline > Build, Test & Analysis
+# Pipeline > Build, Test & Analysis, Deploy
 ## Screencasts
+**M3** screencast can be viewed [here](update_this_link).
+
 **M2** screencast can be viewed [here](https://drive.google.com/file/d/1W9nbQ9ne_URjutOwgRIg5QyTh2OmraXx/view?usp=sharing).
 
 **M1** screencast can be viewed [here](https://drive.google.com/file/d/1aFCotNPFiHQq-daBrSUp6U9fjBSPcWk4/view?usp=sharing).
 
 ## `.env` File Specifications
+TODO: add parameters for Azure account access.
+
 A local `.env` file must be created in the repo folder after the repo is cloned. 
 
 The variables defined must match the mustache-template `{{parameters}}` in the YAML file to be passed to `pipeline build`.
 
-A parameter key of `password` will be assumed to be a github password and special characters will be properly escaped for 
+A parameter key of `password` will be assumed to be a GitHub password and special characters will be properly escaped for 
 use in a URL. 
 
 ```bash
@@ -23,6 +27,9 @@ NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub acces
 in the place of "username" and "token". Any password consisting of numbers and 
 letters can be put in the place of "any_password" for the root_pass as this 
 password will be used for configuring the MySQL database.
+
+## Milestone Report M3
+TODO: document the design of your deployment strategy & experiences you have in designing & implementing your provisioning step and deployment strategy.
 
 ## Milestone Report M2
 We first worked on generating initial baseline snapshots of the files in the test suite which included `long.md`, `survey.md`, `upload.md`, & `variations.md`. This was largely done through following the example implementation of a headless browser image-based snapshot provided in the instructions for this milestone by the teaching staff that made use of the `puppeteer` library. We then implemented eight mutation operators in the newly created file `mutationOperations.js` which include constant replacement, non-empty string, clone return, conditional expression mutation, control flow mutation, conditional boundary mutations, incrementals, & negate conditionals. We added a mutation-coverage job to our `build.yml` which mutates `marqdown.js` for a total of 1000 iterations.
@@ -41,6 +48,9 @@ Over the course of the next ~1 week leading up to the deadline for this mileston
 A issue we were running into was figuring out how to parse the variables present in the `.env` file in order to be able to clone the iTrust repo. We initially tried adding iTrust as a subfolder so it wouldn't need to be pulled from GitHub through the user's NCSU credentials within the `.env` file. However, we later realized that the variables in `.env` could be parsed if we changed their formatting a bit to be compatible with the `dotenv` library. We also used the `mustache` library for template replacement from the `.env` file. We were initially using `heredoc` in the ssh command but ran into the issue where one of our teammates with Windows OS was unable to run the commands with this feature present. Thus, we ended up removing `heredoc` in favor of quotes with escapes instead.
 
 In order to ensure the build environment is clean after a build, we decided to create folders with specific names in which different build jobs will be run. This folder name is written to the environment variables in `job.js`. We decided to have the MySQL instance be set up & run in a docker container with the root password being set as part of the command. Near the end of the milestone, we made a few stylistic changes that included removing logging of potentially sensitive information (useful for when recording the screencast) & did some refactoring such that the four classes previously present in `build.js` got moved into their own files.
+
+## Running the Code M3
+TODO
 
 ## Running the Code M2
 1. Clone the repo & create a `.env` file containing the fields specified above.
