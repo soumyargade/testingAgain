@@ -22,7 +22,6 @@ jobs:
           run: 'cd {{job_loc}}/iTrust2/ && mvn package'
   - name: itrust-deploy
     deploy:
-      name: itrust-deploy
       type: green-blue
       provider: azure
       inventory: 'inventory'
