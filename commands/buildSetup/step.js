@@ -1,6 +1,8 @@
 const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
 const spawn = require('../../lib/exec/spawn');
+const fs = require('fs');
+const cp = require("child_process");
 
 const Env = process.env;
 
@@ -12,7 +14,7 @@ class Step {
 
     async execute(context, _project_dir) {
         try {
-            if(this.command !== false) {
+            if (this.command !== false) {
                 await ssh(mustache.render(this.command, Env), context, true, this.command);
             }
         } catch (e) {
@@ -38,16 +40,90 @@ class Snapshot {
         // Collect snapshots (assume web-app)
         // Collect DOM and/or PNG for diff-ing
         let promises = new Array();
-        for ( let u of this.collect ) {
+        for (let u of this.collect) {
             let filename = u.split('/').pop();
             let newFilename = `${working_dir}/test-output/${filename + file_suffix}`;
-            promises.push( ssh(`node /bakerx/support/index.js screenshot ${u} ${newFilename}`, context));
+            promises.push(ssh(`node /bakerx/support/index.js screenshot ${u} ${newFilename}`, context));
         }
         // run all the snapshots at the same time and wait for them all
         await Promise.all(promises);
         await ssh(`killall node`, context);
     }
 }
+
+class Provider {
+    constructor(machine_info) {
+        this.admin = machine_info.admin;
+        this.ip = machine_info.ip;
+    }
+
+    async copy_file(source, dest, context) {
+        ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ${source} ${this.admin}@${this.ip}:${dest}`, context);
+    }
+
+    async run_command(command, context) {
+        spawn(`ssh ${this.admin}@${this.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null '${command}'`, context)
+    }
+}
+class Artifact {
+    constructor(source, dest) {
+        this.source = source;
+        this.dest = dest;
+    }
+}
+class GreenBlue {
+    constructor(name, inventory, provider, artifacts, steps) {
+        this.name = name;
+        this.file = inventory;
+        this.artifacts = new Array();
+        this.steps = new Array();
+        this.provider = provider;
+
+        for (const artifact of artifacts) {
+            this.artifacts.push(new Artifact(artifact.source, artifact.dest));
+        }
+        for (const step of steps) {
+            this.steps.push(new Step(step.name, step.run));
+        }
+
+        try {
+            var input = fs.readFileSync(`${this.file}`, 'utf-8');
+            this.inventory = JSON.parse(input);
+            switch (provider) {
+                case 'azure':
+                case 'local':
+                    this.green = new Provider(this.inventory.green);
+                    this.blue = new Provider(this.inventory.blue);
+            }
+        } catch (_e) { }
+    }
+
+
+    async execute(context, project_dir) {
+        let copy_futures = new Array();
+        for (const art of this.artifacts) {
+            copy_futures.push(this.green.copy_file(art.source, art.dest, context));
+            copy_futures.push(this.blue.copy_file(art.source, art.dest, context));
+        }
+        await Promise.all(copy_futures);
+
+        for (const step of this.steps) {
+            let step_futures = new Array();
+            step_futures.push(this.green.run_command(step.command, context))
+            step_futures.push(this.blue.run_command(step.command, context))
+            await Promise.all(step_futures);
+        }
+
+        let ips = [this.green.ip, this.blue.ip, this.inventory.lbip];
+        let health = (function(){
+            let child = cp.spawn("node index.js healthcheck",[ips[0], ips[1], ips[2]],{shell: true, detached: true, stdio: 'ignore'});
+            child.unref();
+        }).bind(ips)
+
+        setTimeout(health, 6000);
+    }
+}
+
 class Mutation extends Step {
     constructor(name, files_to_mutate, iterations, init, command, collect) {
         super(name, command);
@@ -60,14 +136,14 @@ class Mutation extends Step {
     async execute(context, project_dir) {
         //TODO: we might be able to be more clever with how we use async/await here
         //      so we can get multiple things going at the same time.
-        if(this.init !== false) {
+        if (this.init !== false) {
             await ssh(`cd ${project_dir} && ${this.init}`, context);
         }
 
-       await ssh(`cp /bakerx/support/run_mutations.sh ./run_mutations.sh && cp /bakerx/support/sed.sh ./sed.sh && ./sed.sh && chmod +x ./run_mutations.sh`, context);
+        await ssh(`cp /bakerx/support/run_mutations.sh ./run_mutations.sh && cp /bakerx/support/sed.sh ./sed.sh && ./sed.sh && chmod +x ./run_mutations.sh`, context);
 
         let url_cmd_str = "";
-        for ( let u of this.collect ) {
+        for (let u of this.collect) {
             if (url_cmd_str.length != 0) {
                 url_cmd_str += " ";
             }
@@ -75,7 +151,7 @@ class Mutation extends Step {
         }
 
         let glob_cmd_str = "";
-        for ( let g of this.to_mutate ) {
+        for (let g of this.to_mutate) {
             if (glob_cmd_str.length != 0) {
                 glob_cmd_str += " ";
             }
@@ -90,4 +166,5 @@ module.exports = {
     Step,
     Mutation,
     Snapshot,
+    GreenBlue,
 };

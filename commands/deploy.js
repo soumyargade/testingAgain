@@ -1,13 +1,10 @@
 const chalk = require('chalk');
 const cp = require("child_process");
-const ssh = require('../lib/exec/ssh');
-const spawn = require('../lib/exec/spawn');
 const fs = require('fs');
+const { BuildFactory } = require('./buildSetup/buildFactory');
 
-const Env = process.env;
 
-
-exports.command = 'deploy inventory [job]';
+exports.command = 'deploy inventory [job_name] [build_file]';
 exports.desc = 'Deploy build to cloud servers';
 exports.builder = yargs => {
     yargs.options({
@@ -16,38 +13,19 @@ exports.builder = yargs => {
 
 exports.handler = async _argv => {
 
-    console.log(chalk.green("Obtaining cloud inventory file..."));
+    let { job_name, build_file } = _argv;
+
+    console.log(chalk.green("Deploying environment..."));
 
     var obj = cp.execSync("bakerx ssh-info m1 --format json");
     var json = JSON.parse(obj);
 
-    var input = fs.readFileSync("inventory", 'utf-8');
-    var inventory = JSON.parse(input);
-
-    let green = inventory.green;
-    let blue = inventory.blue;
-
-
     try {
-        console.log(chalk.green("Loading deployment file onto production servers..."));
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/iTrust2-10.jar ${green.admin}@${green.ip}:`, json);
-        await ssh(`rsync -e 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' ~/iTrust2-10.jar ${blue.admin}@${blue.ip}:`, json);
-        
-        // Has to be run from the guest so the ssh keys match
-        console.log(chalk.green("Starting application on production servers..."));        
-        spawn(`ssh ${green.admin}@${green.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, json)
-        spawn(`ssh ${blue.admin}@${blue.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null java -jar iTrust2-10.jar`, json)
-        
-        // Delay starting the healthcheck so the deployed servers can be started
-        setTimeout((function(){
-            let child = cp.spawn("node index.js healthcheck",[green.ip, blue.ip, inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});
+        let factory = new BuildFactory(fs.readFileSync(build_file, 'utf8'))
+        factory.parse();
 
-            child.unref();
-        }),6000)
-
-
-
-    } catch (err) {
-        console.log(chalk.red(`Error running cloud provisioning script \n ${err}`));
+        factory.jobs.get(job_name).runDeploy(json);
+    } catch (e) {
+        console.log(chalk.red(e));
     }
 }

@@ -1,7 +1,8 @@
 const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
+const spawn = require('../../lib/exec/spawn');
 
-const {Step, Mutation, Snapshot} = require('./step');
+const {Step, Mutation, GreenBlue, Snapshot} = require('./step');
 const {Setup} = require('./setup');
 const { ThrowStatement } = require('esprima');
 
@@ -63,31 +64,18 @@ class BuildStage extends Stage {
 class DeployStage extends Stage {
     constructor(obj) {
         super(obj);
-        this.artifacts = obj.artifacts;
-        this.init = obj.init;
-        this.run = obj.run;
+        this.type = obj.type ? obj.type : 'green-blue';
+        switch (this.type) {
+            case 'green-blue':
+                this.deployment_scheme = new GreenBlue("", obj.inventory, obj.provider, obj.artifacts, obj.steps);
+                break;
+            default:
+                throw TypeError(`"${this.type}" is not a recognized deployment type.`);
+        }
     }
 
     async execute(context, job_loc) {
-        if(this.hasOwnProperty("setup")) {
-            console.log(` Setting up to deploy...`);
-            await this.setup.execute(context, job_loc);
-            console.log(` Set-up complete.`);
-        }
-
-        console.log(` Deploying artifacts...`);
-        await this.artifacts.place(context, job_loc); //TODO
-        console.log(` Artifacts deployed.`);
-
-        if(this.hasOwnProperty("init")) {
-            console.log(` Initializing deployment...`);
-            await this.init.execute();// TODO
-            console.log(` Initialization complete.`);
-        }
-
-        console.log(` Starting deployed server...`);
-        await this.run.execute(); //TODO
-        console.log(` Deployed server started.`);
+        this.deployment_scheme.execute(context, job_loc);
     }
 }
 
@@ -98,7 +86,7 @@ class Job {
         this._build = build;
         this.repo = repo;
         this.job_loc = `${this.name}`;
-        this._deploy = deploy;
+        this.deploy = deploy;
     }
 
     build(build) {
@@ -106,8 +94,8 @@ class Job {
         return this;
     }
 
-    deploy(deploy) {
-        this._deploy = deploy;
+    setDeploy(deploy) {
+        this.deploy = new DeployStage(deploy);
         return this;
     }
 
@@ -128,8 +116,7 @@ class Job {
     async runDeploy(context) {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Deploying job "${this.name}"...`);
-        await this._deploy.execute(context, job_loc);
-        console.log(`Deployment complete.`);
+        await this.deploy.execute(context, this.job_loc);
     }
 }
 

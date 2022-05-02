@@ -1,9 +1,3 @@
-setup:
-  - name: build environment
-    steps:
-      - name: Update
-        run: 'sudo apt-get update -yqq && sudo apt-get upgrade -yqq'
-
 jobs:
   - name: itrust-build
     repo: https://{{username}}:{{token}}@github.ncsu.edu/engr-csc326-staff/iTrust2-v10.git
@@ -11,6 +5,8 @@ jobs:
       setup: # NEW
         - name: Build environment
           steps:
+            - name: Setup & Updates
+              run: 'sudo apt-get update -yqq && sudo apt-get upgrade -yqq'
             - name: Install Dependencies
               run: 'sudo apt-get install -yqq python3-pip openjdk-11-jdk git maven docker.io'
       steps:
@@ -21,21 +17,19 @@ jobs:
         - name: Copy database password into application.yml file
           run: 'sudo sed -i "s/password\:/password\:\ {{root_pass}}/g" {{job_loc}}/iTrust2/src/main/resources/application.yml'
         - name: Build iTrust
-          run: 'cd {{job_loc}}/iTrust2/ && mvn -q spring-boot:run && mvn package'
-    deploy: # NEW
-      setup:
-        steps:
-          - name: Install Dependencies
-            run: 'sudo apt-get install -yqq ...'
-          - name: Setup MySQL
-            run: ''
-      artifacts: 
-        - source: something.war
-          destination: ~/something.war
-        - source: maybe_some_config_file.cfg
-          destination: ~/.config/maybe_some_config_file.cfg
-      init: 'idk something like npm install (in case it is needed)'
-      run: 'itrust run' # I know this isn't right, but you get the idea.
+          run: 'cd {{job_loc}}/iTrust2/ && mvn --batch-mode --update-snapshots clean test'
+        - name: Create jar file for deployment
+          run: 'cd {{job_loc}}/iTrust2/ && mvn package'
+    deploy:
+      type: green-blue
+      provider: azure
+      inventory: 'inventory'
+      artifacts:
+        - source: '~/itrust-build/iTrust2/target/iTrust2-10.jar'
+          dest: '~/iTrust2-10.jar'
+      steps:
+        - name: Run iTrust2
+          run: 'java -jar ~/iTrust2-10.jar'
   - name: mutation-coverage
     repo: https://github.com/chrisparnin/checkbox.io-micro-preview
     build:

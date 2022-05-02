@@ -11,20 +11,8 @@ class BuildFactory {
     }
 
     parse() {
-        if (!this.doc.hasOwnProperty("setup")) {
-            throw 'Missing required field "setup" in yaml file';
-        }
-
         if (!this.doc.hasOwnProperty("jobs")) {
             throw 'Missing required field "jobs" in yaml file';
-        }
-
-        for(const setup of this.doc.setup) {
-            let steps = new Array();
-            for (const step of setup.steps) {
-                steps.push(new Step(step.name, step.run));
-            }
-             this.setup.push(new Setup(setup.name, steps));
         }
 
         for(const job of this.doc.jobs) {
@@ -38,7 +26,7 @@ class BuildFactory {
                         j.build(obj);
                         break;
                     case "deploy":
-                        j.deploy(obj);
+                        j.setDeploy(obj);
                         break;
                     default:
                         throw `Stage type "${stage}" was not recognized`;
