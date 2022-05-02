@@ -109,8 +109,8 @@ class GreenBlue {
 
         for (const step of this.steps) {
             let step_futures = new Array();
-            step_futures.push(this.green.run_command(this.step.run, context))
-            step_futures.push(this.blue.run_command(this.step.run, context))
+            step_futures.push(this.green.run_command(step.command, context))
+            step_futures.push(this.blue.run_command(step.command, context))
             await Promise.all(step_futures);
         }
 
