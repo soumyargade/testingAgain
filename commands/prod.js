@@ -1,7 +1,9 @@
 const chalk = require('chalk');
 const cp = require("child_process");
+const fs = require("fs");
 const ssh = require('../lib/exec/ssh');
 const mustache = require('mustache');
+const {BuildFactory} = require('./buildSetup/buildFactory');
 
 const Env = process.env;
 
@@ -16,7 +18,7 @@ exports.builder = yargs => {
 
 async function azure_up(json) {
     try {
-        await ssh(`/bakerx/lib/scripts/cloud_provision.sh ${mustache.render("{{cloud_pass}}", Env)} ${mustache.render("{{root_pass}}", Env)} ${mustache.render("{{tenent}}", Env)} ${mustache.render("{{cloud_username}}", Env)}`, json);
+        await ssh(mustache.render(`/bakerx/lib/scripts/cloud_provision.sh {{cloud_pass}} {{root_pass}} {{tenent}} {{cloud_username}}"`, Env), json);
 
     } catch (err) {
         console.log(chalk.red(`Error running cloud provisioning script \n ${e}`));
@@ -50,7 +52,7 @@ exports.handler = async argv => {
     let factory = new BuildFactory(fs.readFileSync(build_file, 'utf8'))
     factory.parse();
     let job = factory.jobs.get(job_name);
-    const provider = job.deploy.provider;
+    const provider = job.deploy.deployment_scheme.provider;
 
     if (direction == "up") {
         

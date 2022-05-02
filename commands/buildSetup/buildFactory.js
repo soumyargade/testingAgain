@@ -26,7 +26,7 @@ class BuildFactory {
                         j.build(obj);
                         break;
                     case "deploy":
-                        j.deploy(obj);
+                        j.setDeploy(obj);
                         break;
                     default:
                         throw `Stage type "${stage}" was not recognized`;

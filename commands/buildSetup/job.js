@@ -86,7 +86,7 @@ class Job {
         this._build = build;
         this.repo = repo;
         this.job_loc = `${this.name}`;
-        this._deploy = deploy;
+        this.deploy = deploy;
     }
 
     build(build) {
@@ -94,8 +94,8 @@ class Job {
         return this;
     }
 
-    deploy(deploy) {
-        this._deploy = new DeployStage(deploy);
+    setDeploy(deploy) {
+        this.deploy = new DeployStage(deploy);
         return this;
     }
 
@@ -116,7 +116,7 @@ class Job {
     async runDeploy(context) {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Deploying job "${this.name}"...`);
-        await this._deploy.execute(context, this.job_loc);
+        await this.deploy.execute(context, this.job_loc);
     }
 }
 
