@@ -16,10 +16,15 @@ The variables defined must match the mustache-template `{{parameters}}` in the Y
 A parameter key of `password` will be assumed to be a GitHub password and special characters will be properly escaped for 
 use in a URL. 
 
+*Update*: for M3, the `cloud_username`, `cloud_pass`, & `tenent` variables have been added & will need to be updated with your corresponding Azure account credentials. If you do not have an Azure account, please reach out to our team & we will provide our own credentials for your use in recreating the prod & deploy steps.
+
 ```bash
 username="unityid"
 token="token"
 root_pass="any_password"
+cloud_username="your_Azure_username"
+cloud_pass="your_Azure_password"
+tenent="your_Azure_tenent"
 ```
 
 In order for the build process to successfully clone the iTrust repo from the 
