@@ -120,7 +120,7 @@ class GreenBlue {
             child.unref();
         }).bind(ips)
 
-        setTimeout(health, 6000);
+        setTimeout(health, 20000);
     }
 }
 
