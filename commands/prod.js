@@ -18,7 +18,7 @@ exports.builder = yargs => {
 
 async function azure_up(json) {
     try {
-        await ssh(mustache.render(`/bakerx/lib/scripts/cloud_provision.sh {{cloud_pass}} {{root_pass}} {{tenent}} {{cloud_username}}"`, Env), json);
+        await ssh(mustache.render(`/bakerx/lib/scripts/cloud_provision.sh {{cloud_pass}} {{root_pass}} {{tenent}} {{cloud_username}}`, Env), json);
 
     } catch (err) {
         console.log(chalk.red(`Error running cloud provisioning script \n ${e}`));
