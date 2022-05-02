@@ -34,7 +34,14 @@ letters can be put in the place of "any_password" for the root_pass as this
 password will be used for configuring the MySQL database.
 
 ## Milestone Report M3
-TODO: document the design of your deployment strategy & experiences you have in designing & implementing your provisioning step and deployment strategy.
+Our `prod up` command provisions instances with the use of Azure as a cloud provider. It also simulataneously generates an `inventory` file containing connection information for the cloud resources. This information includes the admin name and IP address of the instance & looks something like the following:
+
+```
+{ "lbip": "20.85.245.86" ,
+"green":{ "admin": "devopsadmin", "ip": "20.85.247.195", "vmname": "GreenVM" },
+"blue":{ "admin": "devopsadmin", "ip": "20.85.246.166", "vmname": "BlueVM" }
+}
+```
 
 ## Milestone Report M2
 We first worked on generating initial baseline snapshots of the files in the test suite which included `long.md`, `survey.md`, `upload.md`, & `variations.md`. This was largely done through following the example implementation of a headless browser image-based snapshot provided in the instructions for this milestone by the teaching staff that made use of the `puppeteer` library. We then implemented eight mutation operators in the newly created file `mutationOperations.js` which include constant replacement, non-empty string, clone return, conditional expression mutation, control flow mutation, conditional boundary mutations, incrementals, & negate conditionals. We added a mutation-coverage job to our `build.yml` which mutates `marqdown.js` for a total of 1000 iterations.
