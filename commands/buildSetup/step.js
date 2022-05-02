@@ -86,12 +86,12 @@ class GreenBlue {
         }
 
         var input = fs.readFileSync(`${this.file}`, 'utf-8');
-        var inventory = JSON.parse(input);
+        this.inventory = JSON.parse(input);
         switch (provider) {
             case 'azure':
             case 'local':
-                this.green = new Provider(inventory.green);
-                this.blue= new Provider(inventory.blue);
+                this.green = new Provider(this.inventory.green);
+                this.blue= new Provider(this.inventory.blue);
         }
     }
 
@@ -112,7 +112,7 @@ class GreenBlue {
         }
 
         setTimeout((function(){
-            let child = cp.spawn("node index.js healthcheck",[green.ip, blue.ip, inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});
+            let child = cp.spawn("node index.js healthcheck",[this.green.ip, this.blue.ip, this.inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});
 
             child.unref();
         }),6000)
