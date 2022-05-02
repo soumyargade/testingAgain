@@ -62,7 +62,7 @@ class Provider {
     }
 
     async run_command(command, context) {
-        spawn(`ssh ${this.admin}@${this.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${command}`, context)
+        spawn(`ssh ${this.admin}@${this.ip} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null '${command}'`, context)
     }
 }
 class Artifact {
@@ -114,11 +114,13 @@ class GreenBlue {
             await Promise.all(step_futures);
         }
 
-        setTimeout((function(){
-            let child = cp.spawn("node index.js healthcheck",[this.green.ip, this.blue.ip, this.inventory.lbip],{shell: true, detached: true, stdio: 'ignore'});
-
+        let ips = [this.green.ip, this.blue.ip, this.inventory.lbip];
+        let health = (function(){
+            let child = cp.spawn("node index.js healthcheck",[ips[0], ips[1], ips[2]],{shell: true, detached: true, stdio: 'ignore'});
             child.unref();
-        }), 6000)
+        }).bind(ips)
+
+        setTimeout(health, 6000);
     }
 }
 
