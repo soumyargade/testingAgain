@@ -124,6 +124,21 @@ class GreenBlue {
     }
 }
 
+class DockerContainer {
+    constructor(steps) {
+        this.steps = new Array();
+        for (const step of steps) {
+            this.steps.push(new Step(step.name, step.run));
+        }
+    }
+
+    async execute(context, project_dir) {
+        for (const step of this.steps) {
+            await step.execute(context, project_dir);
+        }
+    }
+}
+
 class Mutation extends Step {
     constructor(name, files_to_mutate, iterations, init, command, collect) {
         super(name, command);
@@ -167,4 +182,5 @@ module.exports = {
     Mutation,
     Snapshot,
     GreenBlue,
+    DockerContainer
 };

@@ -59,23 +59,27 @@ jobs:
             - name: setup & updates
               run: 'sudo apt-get update -y'
             - name: install dependencies
-              run: 'sudo apt-get install -y make golang-go xvfb libgtk-3-0'
+              run: 'sudo apt-get install -y docker.io make golang-go xvfb libgtk-3-0'
             - name: check version # debugging
               run: 'go version'
       steps:
         ######################### BUILD #########################
-        - name: prebuild
-          run: 'cd {{job_loc}} && make prebuild'
-        - name: build
-          run: 'cd {{job_loc}} && make'
-          # run: 'cd {{job_loc}} && ./bin/focalboard-server'
-          # add port forwarding to 8000 & go to localhost:8000
+        - name: build docker image
+          run: 'cd {{job_loc}} && sudo docker build -f docker/Dockerfile -t focalboard .'
         ######################### TEST #########################
-        - name: server unit tests
-          run: 'cd {{job_loc}} && make server-test'
-        - name: web app ESLint
-          run: 'cd {{job_loc}}/webapp/ && npm run check'
-        - name: web app unit tests
-          run: 'cd {{job_loc}}/webapp/ && npm run test'
-        - name: web app UI tests
-          run: 'cd {{job_loc}}/webapp/ && npm run cypress:ci'
+        #- name: server unit tests
+        #  run: 'cd {{job_loc}} && make server-test'
+        #- name: web app ESLint
+        #  run: 'cd {{job_loc}}/webapp/ && npm run check'
+        #- name: web app unit tests
+        #  run: 'cd {{job_loc}}/webapp/ && npm run test'
+        #- name: web app UI tests
+        #  run: 'cd {{job_loc}}/webapp/ && npm run cypress:ci'
+    ######################### DEPLOY/RELEASE #########################
+    deploy:
+      type: docker-container
+      steps:
+        - name: deploy the container
+          run: 'cd {{job_loc}} && sudo docker run -d -p 80:8000 focalboard'
+        - name: confirm container is up
+          run: 'cd {{job_loc}} && sudo docker ps'

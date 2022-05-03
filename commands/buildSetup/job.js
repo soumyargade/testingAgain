@@ -2,7 +2,7 @@ const ssh = require('../../lib/exec/ssh');
 const mustache = require('mustache');
 const spawn = require('../../lib/exec/spawn');
 
-const {Step, Mutation, GreenBlue, Snapshot} = require('./step');
+const {Step, Mutation, GreenBlue, DockerContainer} = require('./step');
 const {Setup} = require('./setup');
 const { ThrowStatement } = require('esprima');
 
@@ -68,6 +68,9 @@ class DeployStage extends Stage {
         switch (this.type) {
             case 'green-blue':
                 this.deployment_scheme = new GreenBlue("", obj.inventory, obj.provider, obj.artifacts, obj.steps);
+                break;
+            case 'docker-container':
+                this.deployment_scheme = new DockerContainer(obj.steps);
                 break;
             default:
                 throw TypeError(`"${this.type}" is not a recognized deployment type.`);
