@@ -52,20 +52,30 @@ jobs:
     repo: https://github.com/mattermost/focalboard.git
     build:
       setup:
-        - name: install dependencies
+        - name: initial setup
           steps:
             - name: add golang repo
               run: 'sudo add-apt-repository ppa:longsleep/golang-backports'
             - name: setup & updates
               run: 'sudo apt-get update -y'
-            - name: install make & go
-              run: 'sudo apt-get install -y make golang-go'
+            - name: install dependencies
+              run: 'sudo apt-get install -y make golang-go xvfb libgtk-3-0'
             - name: check version # debugging
               run: 'go version'
       steps:
+        ######################### BUILD #########################
         - name: prebuild
           run: 'cd {{job_loc}} && make prebuild'
         - name: build
           run: 'cd {{job_loc}} && make'
-        - name: check build worked
-          run: 'cd {{job_loc}} && ./bin/focalboard-server'
+          # run: 'cd {{job_loc}} && ./bin/focalboard-server'
+          # add port forwarding to 8000 & go to localhost:8000
+        ######################### TEST #########################
+        - name: server unit tests
+          run: 'cd {{job_loc}} && make server-test'
+        - name: web app ESLint
+          run: 'cd {{job_loc}}/webapp/ && npm run check'
+        - name: web app unit tests
+          run: 'cd {{job_loc}}/webapp/ && npm run test'
+        - name: web app UI tests
+          run: 'cd {{job_loc}}/webapp/ && npm run cypress:ci'
