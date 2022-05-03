@@ -7,7 +7,6 @@
 **M1** screencast can be viewed [here](https://drive.google.com/file/d/1aFCotNPFiHQq-daBrSUp6U9fjBSPcWk4/view?usp=sharing).
 
 ## `.env` File Specifications
-TODO: add parameters for Azure account access.
 
 A local `.env` file must be created in the repo folder after the repo is cloned. 
 
