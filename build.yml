@@ -66,15 +66,19 @@ jobs:
         ######################### BUILD #########################
         - name: build docker image
           run: 'cd {{job_loc}} && sudo docker build -f docker/Dockerfile -t focalboard .'
+        - name: test
+          run: 'cd {{job_loc}} && make prebuild'
+        - name: test part 2
+          run: 'cd {{job_loc}} && make'
         ######################### TEST #########################
-        #- name: server unit tests
-        #  run: 'cd {{job_loc}} && make server-test'
-        #- name: web app ESLint
-        #  run: 'cd {{job_loc}}/webapp/ && npm run check'
-        #- name: web app unit tests
-        #  run: 'cd {{job_loc}}/webapp/ && npm run test'
-        #- name: web app UI tests
-        #  run: 'cd {{job_loc}}/webapp/ && npm run cypress:ci'
+        - name: server unit tests
+          run: 'cd {{job_loc}} && make server-test'
+        - name: web app ESLint
+          run: 'cd {{job_loc}}/webapp/ && npm run check'
+        - name: web app unit tests
+          run: 'cd {{job_loc}}/webapp/ && npm run test'
+        - name: web app UI tests
+          run: 'cd {{job_loc}}/webapp/ && npm run cypress:ci'
     ######################### DEPLOY/RELEASE #########################
     deploy:
       type: docker-container
