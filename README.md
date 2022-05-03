@@ -1,21 +1,29 @@
-# Pipeline > Build, Test & Analysis
+# Pipeline > Build, Test & Analysis, Deploy
 ## Screencasts
+**M3** screencast can be viewed [here](https://drive.google.com/file/d/1-BUvRWWX3yW3-5pf8Bvc1fZNfS7DNmJv/view?usp=sharing).
+
 **M2** screencast can be viewed [here](https://drive.google.com/file/d/1W9nbQ9ne_URjutOwgRIg5QyTh2OmraXx/view?usp=sharing).
 
 **M1** screencast can be viewed [here](https://drive.google.com/file/d/1aFCotNPFiHQq-daBrSUp6U9fjBSPcWk4/view?usp=sharing).
 
 ## `.env` File Specifications
+
 A local `.env` file must be created in the repo folder after the repo is cloned. 
 
 The variables defined must match the mustache-template `{{parameters}}` in the YAML file to be passed to `pipeline build`.
 
-A parameter key of `password` will be assumed to be a github password and special characters will be properly escaped for 
+A parameter key of `password` will be assumed to be a GitHub password and special characters will be properly escaped for 
 use in a URL. 
+
+*Update*: for M3, the `cloud_username`, `cloud_pass`, & `tenent` variables have been added & will need to be updated with your corresponding Azure account credentials. If you do not have an Azure account, please reach out to our team & we will provide our own credentials for your use in recreating the prod & deploy steps.
 
 ```bash
 username="unityid"
 token="token"
 root_pass="any_password"
+cloud_username="your_Azure_username"
+cloud_pass="your_Azure_password"
+tenent="your_Azure_tenent"
 ```
 
 In order for the build process to successfully clone the iTrust repo from the 
@@ -23,6 +31,22 @@ NCSU GitHub, you must put your **real unity id** and a **valid NCSU GitHub acces
 in the place of "username" and "token". Any password consisting of numbers and 
 letters can be put in the place of "any_password" for the root_pass as this 
 password will be used for configuring the MySQL database.
+
+## Milestone Report M3
+Our `prod up` command provisions two instances & a load balancer with the use of Azure as a cloud provider. It also simulataneously generates an `inventory` file containing connection information for the cloud resources. This information includes the IP address of the load balancer, & the "admin", "ip", & "vmname" of each of the two instances. It looks something like the following:
+
+```
+{ "lbip": "20.85.245.86" ,
+"green":{ "admin": "devopsadmin", "ip": "20.85.247.195", "vmname": "GreenVM" },
+"blue":{ "admin": "devopsadmin", "ip": "20.85.246.166", "vmname": "BlueVM" }
+}
+```
+
+We extended our `itrust-build` job to create a jar file for deployment with the use of the `mvn package` command which creates a `iTrust2-10.jar` in the target directory. We implemented a **blue green deployment** with a setup similar to that of the [Deployment workshop](https://github.com/CSC-DevOps/Deployment). Both the blue & green servers are created at the same time and the load balancer points to the green. Both servers are then loaded with the same software and the health check is started. If the health check senses an issue, it automatically switches over from the green to the blue server.
+
+As part of this milestone, we modified our `build.yml` to include a `setup` & `deploy` section within the itrust-build job (the deploy section was later moved out to be part of a new job, itrust-deploy, as it seems this is more in line with the way the teaching staff are expecting to run the deploy command). The deploy subsection has fields where the type of deployment, cloud provider, name of the inventory file, & artifacts (path to source and destination) can be specified. We added a `DeployStage` class to `job.js` and `Provider`, `Artifact`, & `GreenBlue` classes to `step.js` to help facilitate the deployment.
+
+One of the issues we had was figuring out to transfer files over ssh but we were able to end up doing this with the help of `rsync`. Another problem we ran into was having to frequently ask Tanner to kill previously created instances on his Azure account in order to be able to start the deployment from scratch for testing purposes. This was becoming cumbersome as everyone on the team was using Tanner's Azure credentials so we decided to configure a `prod down` command which could be used to destroy the instances in Azure upon end of use.
 
 ## Milestone Report M2
 We first worked on generating initial baseline snapshots of the files in the test suite which included `long.md`, `survey.md`, `upload.md`, & `variations.md`. This was largely done through following the example implementation of a headless browser image-based snapshot provided in the instructions for this milestone by the teaching staff that made use of the `puppeteer` library. We then implemented eight mutation operators in the newly created file `mutationOperations.js` which include constant replacement, non-empty string, clone return, conditional expression mutation, control flow mutation, conditional boundary mutations, incrementals, & negate conditionals. We added a mutation-coverage job to our `build.yml` which mutates `marqdown.js` for a total of 1000 iterations.
@@ -42,11 +66,21 @@ A issue we were running into was figuring out how to parse the variables present
 
 In order to ensure the build environment is clean after a build, we decided to create folders with specific names in which different build jobs will be run. This folder name is written to the environment variables in `job.js`. We decided to have the MySQL instance be set up & run in a docker container with the root password being set as part of the command. Near the end of the milestone, we made a few stylistic changes that included removing logging of potentially sensitive information (useful for when recording the screencast) & did some refactoring such that the four classes previously present in `build.js` got moved into their own files.
 
+## Running the Code M3
+1. Clone the repo & create a `.env` file containing the fields specified above.
+2. Run `npm install` to install the necessary dependencies.
+3. Run `node index.js init` to provision & configure the VM.
+4. Run `node index.js build itrust-build build.yml`.
+5. Run `node index.js build mutation-coverage build.yml` (optional).
+6. Run `node index.js prod up itrust-build build.yml` to provision instances on Azure.
+7. Run `node index.js deploy inventory itrust-deploy build.yml` to deploy. *Note*: You will need to wait 1-2 minutes before running this in order to give time for the instances to be provisioned on Azure from the previous step.
+8. Run `node index.js prod down itrust-build build.yml` to destroy instances (optional).
+
 ## Running the Code M2
 1. Clone the repo & create a `.env` file containing the fields specified above.
 2. Run `npm install` to install the necessary dependencies.
 3. Run `node index.js init` to provision & configure the VM.
-4. Run `node index.js build itrust-build build.yml`. (optional)
+4. Run `node index.js build itrust-build build.yml` (optional).
 5. Run `node index.js build mutation-coverage build.yml`.
 
 ## Running the Code M1

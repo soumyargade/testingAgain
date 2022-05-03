@@ -11,39 +11,28 @@ class BuildFactory {
     }
 
     parse() {
-        if (!this.doc.hasOwnProperty("setup")) {
-            throw 'Missing required field "setup" in yaml file';
-        }
-
         if (!this.doc.hasOwnProperty("jobs")) {
             throw 'Missing required field "jobs" in yaml file';
         }
 
-        for(const setup of this.doc.setup) {
-            let steps = new Array();
-            for (const step of setup.steps) {
-                steps.push(new Step(step.name, step.run));
-            }
-             this.setup.push(new Setup(setup.name, steps));
-        }
-
         for(const job of this.doc.jobs) {
-            let steps = new Array();
-            for(const step of job.steps) {
-                if (step.hasOwnProperty("mutation")) {
-                    steps.push(new Mutation(
-                        step.name, 
-                        step.mutation.mutate, 
-                        step.mutation.iterations, 
-                        step.mutation.init ?? false,
-                        step.mutation.snapshot.run,
-                        step.mutation.snapshot.collect
-                    ));
-                } else {
-                    steps.push(new Step(step.name, step.run));
+            let j = new Job(job.name, job.repo);
+            for(const [stage, obj] of Object.entries(job)) {
+                switch (stage) {
+                    case "name":
+                    case "repo":
+                        break;
+                    case "build":
+                        j.build(obj);
+                        break;
+                    case "deploy":
+                        j.setDeploy(obj);
+                        break;
+                    default:
+                        throw `Stage type "${stage}" was not recognized`;
                 }
             }
-            this.jobs.set(job.name, new Job(job.name, job.repo, steps));
+            this.jobs.set(job.name, j);
         }
     }
 }
