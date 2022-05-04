@@ -66,9 +66,9 @@ jobs:
         ######################### BUILD #########################
         - name: build docker image
           run: 'cd {{job_loc}} && sudo docker build -f docker/Dockerfile -t focalboard .'
-        - name: test
+        - name: prebuild
           run: 'cd {{job_loc}} && make prebuild'
-        - name: test part 2
+        - name: local build
           run: 'cd {{job_loc}} && make'
         ######################### TEST ##########################
         - name: server unit tests
@@ -87,24 +87,28 @@ jobs:
           run: 'cd {{job_loc}} && sudo docker run -d -p 80:8000 focalboard'
         - name: confirm container is up
           run: 'cd {{job_loc}} && sudo docker ps' # debugging
-  - name: todo
-    repo: todo
+  - name: wger
+    repo: https://github.com/wger-project/wger.git
     build:
       setup:
         - name: initial setup
           steps:
-            - name: todo
-              run: 'todo'
+            - name: install dependencies
+              run: 'sudo apt-get install -yqq python3-pip docker.io'
       steps:
         ######################### BUILD #########################
-        - name: todo
-          run: 'todo'
+        - name: build docker image
+          run: 'cd {{job_loc}} && sudo docker build -f extras/docker/demo/Dockerfile -t wger .'
+        - name: test
+          run: 'cd {{job_loc}} && sudo pip install -r requirements_dev.txt'
         ######################### TEST ##########################
         - name: todo
           run: 'todo'
     ######################### DEPLOY/RELEASE #########################
     deploy:
-      type: todo
+      type: docker-container
       steps:
-        - name: todo
-          run: 'todo'
+        - name: deploy the container
+          run: 'cd {{job_loc}} && sudo docker run -d -p 80:8000 wger'
+        - name: confirm container is up
+          run: 'cd {{job_loc}} && sudo docker ps' # debugging
