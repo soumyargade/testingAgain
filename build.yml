@@ -126,6 +126,6 @@ jobs:
           run: 'cd {{job_loc}} && sudo docker ps' # debugging
   - name: wger-analysis
     analysis:
-      steps:
-        - name: test
-          run: 'python --version'
+      pylint:
+        folder:
+          - '~/wger/wger'
