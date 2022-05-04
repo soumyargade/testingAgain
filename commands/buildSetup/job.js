@@ -85,10 +85,13 @@ class DeployStage extends Stage {
 class AnalysisStage {
     constructor(obj) {
         this.folder = obj.pylint.folder;
+        let astFiles = new Array();
+        for (const file in obj.astModule.analyze) {
+            astFiles.push(obj.astModule.analyze[file]);
+        }
+        this.astFiles = astFiles;
         let setup_steps = new Array();
         for (const step of obj.setup.steps) {
-            console.log(step.name);
-            console.log(step.run);
             let s = new Step(step.name, step.run);
             setup_steps.push(s);
         }
@@ -98,7 +101,10 @@ class AnalysisStage {
     async execute(context, job_loc) {
         await this.setup.execute(context, job_loc);
         await ssh(`sudo cp /bakerx/support/astModule.py /home/vagrant`, context);
-        await ssh('python3 astModule.py wger-build/wger/tasks.py', context);
+        for (const file in this.astFiles) {
+            console.log(`File Under Analysis: ${this.astFiles[file]}` )
+            await ssh(`python3 astModule.py ${this.astFiles[file]}`, context);
+        }
         await ssh(`pylint ${this.folder}`, context);
     }
 }
