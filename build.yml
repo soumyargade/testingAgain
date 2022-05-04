@@ -107,15 +107,15 @@ jobs:
           run: 'cd {{job_loc}} && sudo pip install -e .'
         - name: create settings
           run: 'cd {{job_loc}} && wger create-settings'
-        - name: bootstrap
+        - name: local build & bootstrap
           run: 'cd {{job_loc}} && wger bootstrap'
         - name: populate with data on first run
           run: 'cd {{job_loc}} && wger load-online-fixtures'
         #- name: confirm server is up
         #  run: 'cd {{job_loc}} && python manage.py runserver'
         ######################### TEST ##########################
-        - name: todo
-          run: 'todo'
+        - name: run entire testing suite
+          run: 'cd {{job_loc}} && python3 manage.py test'
     ######################### DEPLOY/RELEASE #########################
     deploy:
       type: docker-container
