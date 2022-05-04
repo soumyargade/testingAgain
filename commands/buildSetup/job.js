@@ -85,15 +85,19 @@ class DeployStage extends Stage {
 class AnalysisStage {
     constructor(obj) {
         this.folder = obj.pylint.folder;
+        let setup_steps = new Array();
+        for (const step of obj.setup.steps) {
+            console.log(step.name);
+            console.log(step.run);
+            let s = new Step(step.name, step.run);
+            setup_steps.push(s);
+        }
+        this.setup = new Setup(obj.setup.name, setup_steps);
     }
 
     async execute(context, job_loc) {
-        await ssh(`sudo pip install pylint`, context);
+        await this.setup.execute(context, job_loc);
         await ssh(`pylint ${this.folder}`, context);
-        // for( let [index, step] of this.steps.entries() ) {
-        //     console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
-        //     await step.execute(context, job_loc);
-        // }
     }
 }
 

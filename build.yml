@@ -126,6 +126,10 @@ jobs:
           run: 'cd {{job_loc}} && sudo docker ps' # debugging
   - name: wger-analysis
     analysis:
+      setup:
+        steps:
+          - name: install pylint
+            run: 'sudo pip install pylint'
       pylint:
         folder:
           - '~/wger/wger'
