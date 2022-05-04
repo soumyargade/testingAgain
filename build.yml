@@ -99,8 +99,8 @@ jobs:
               run: 'sudo apt-get install -yqq python3-pip docker.io'
       steps:
         ######################### BUILD #########################
-        - name: build docker image
-          run: 'cd {{job_loc}} && sudo docker build -f extras/docker/demo/Dockerfile -t wger .'
+        #- name: build docker image
+        #  run: 'cd {{job_loc}} && sudo docker build -f extras/docker/demo/Dockerfile -t wger .'
         - name: install python requirements
           run: 'cd {{job_loc}} && sudo pip install -r requirements_dev.txt'
         - name: install more python reqs
@@ -114,8 +114,8 @@ jobs:
         #- name: confirm server is up
         #  run: 'cd {{job_loc}} && python manage.py runserver'
         ######################### TEST ##########################
-        - name: run entire testing suite
-          run: 'cd {{job_loc}} && python3 manage.py test'
+        #- name: run entire testing suite
+        #  run: 'cd {{job_loc}} && python3 manage.py test'
     ######################### DEPLOY/RELEASE #########################
     deploy:
       type: docker-container
@@ -132,4 +132,4 @@ jobs:
             run: 'sudo pip install pylint'
       pylint:
         folder:
-          - '~/wger/wger'
+          - '~/wger-build/wger'

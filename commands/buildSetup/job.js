@@ -97,6 +97,8 @@ class AnalysisStage {
 
     async execute(context, job_loc) {
         await this.setup.execute(context, job_loc);
+        await ssh(`sudo cp /bakerx/support/astModule.py /home/vagrant`, context);
+        await ssh('python3 astModule.py wger-build/wger/tasks.py', context);
         await ssh(`pylint ${this.folder}`, context);
     }
 }

@@ -1,8 +1,8 @@
-import ast
+import ast, sys
 from pprint import pprint
 
 def main():
-    with open("wger/wger/tasks.py", "r") as source:
+    with open(sys.argv[1], "r") as source:
         tree = ast.parse(source.read())
 
     analyzer = Analyzer()
