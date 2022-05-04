@@ -70,7 +70,7 @@ jobs:
           run: 'cd {{job_loc}} && make prebuild'
         - name: test part 2
           run: 'cd {{job_loc}} && make'
-        ######################### TEST #########################
+        ######################### TEST ##########################
         - name: server unit tests
           run: 'cd {{job_loc}} && make server-test'
         - name: web app ESLint
@@ -86,4 +86,25 @@ jobs:
         - name: deploy the container
           run: 'cd {{job_loc}} && sudo docker run -d -p 80:8000 focalboard'
         - name: confirm container is up
-          run: 'cd {{job_loc}} && sudo docker ps'
+          run: 'cd {{job_loc}} && sudo docker ps' # debugging
+  - name: todo
+    repo: todo
+    build:
+      setup:
+        - name: initial setup
+          steps:
+            - name: todo
+              run: 'todo'
+      steps:
+        ######################### BUILD #########################
+        - name: todo
+          run: 'todo'
+        ######################### TEST ##########################
+        - name: todo
+          run: 'todo'
+    ######################### DEPLOY/RELEASE #########################
+    deploy:
+      type: todo
+      steps:
+        - name: todo
+          run: 'todo'
