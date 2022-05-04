@@ -93,14 +93,26 @@ jobs:
       setup:
         - name: initial setup
           steps:
+            - name: install necessary packages
+              run: 'sudo npm install -g yarn sass'
             - name: install dependencies
               run: 'sudo apt-get install -yqq python3-pip docker.io'
       steps:
         ######################### BUILD #########################
         - name: build docker image
           run: 'cd {{job_loc}} && sudo docker build -f extras/docker/demo/Dockerfile -t wger .'
-        - name: test
+        - name: install python requirements
           run: 'cd {{job_loc}} && sudo pip install -r requirements_dev.txt'
+        - name: install more python reqs
+          run: 'cd {{job_loc}} && sudo pip install -e .'
+        - name: create settings
+          run: 'cd {{job_loc}} && wger create-settings'
+        - name: bootstrap
+          run: 'cd {{job_loc}} && wger bootstrap'
+        - name: populate with data on first run
+          run: 'cd {{job_loc}} && wger load-online-fixtures'
+        #- name: confirm server is up
+        #  run: 'cd {{job_loc}} && python manage.py runserver'
         ######################### TEST ##########################
         - name: todo
           run: 'todo'
