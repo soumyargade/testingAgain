@@ -82,14 +82,32 @@ class DeployStage extends Stage {
     }
 }
 
+class AnalysisStage extends Stage {
+    constructor(obj) {
+        super(obj);
+        let analysis_steps = new Array();
+        for (const step of obj.steps) {
+            analysis_steps.push(new Step(step.name, step.run));
+        }
+        this.steps = analysis_steps;
+    }
+
+    async execute(context, job_loc) {
+        for( let [index, step] of this.steps.entries() ) {
+            console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
+            await step.execute(context, job_loc);
+        }
+    }
+}
 
 class Job {
-    constructor(name, repo, build, deploy) {
+    constructor(name, repo, build, deploy, analysis) {
         this.name = name;
         this._build = build;
         this.repo = repo;
         this.job_loc = `${this.name}`;
         this.deploy = deploy;
+        this.analysis = analysis;
     }
 
     build(build) {
@@ -99,6 +117,11 @@ class Job {
 
     setDeploy(deploy) {
         this.deploy = new DeployStage(deploy);
+        return this;
+    }
+
+    setAnalysis(analysis) {
+        this.analysis = new AnalysisStage(analysis);
         return this;
     }
 
@@ -121,6 +144,12 @@ class Job {
         console.log(`Deploying job "${this.name}"...`);
         await this.deploy.execute(context, this.job_loc);
     }
+
+    async runAnalysis(context) {
+        Env.job_loc = this.job_loc; // Write the folder name to environment variables
+        console.log(`Analyzing job "${this.name}"...`);
+        await this.analysis.execute(context, this.job_loc);
+    }
 }
 
 module.exports = {
@@ -128,4 +157,5 @@ module.exports = {
     Stage,
     BuildStage,
     DeployStage,
+    AnalysisStage
 };
