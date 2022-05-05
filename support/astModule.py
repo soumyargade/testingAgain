@@ -9,7 +9,6 @@ def main():
     analyzer.visit(tree)
     analyzer.report()
 
-
 class Analyzer(ast.NodeVisitor):
     def __init__(self):
         self.importCount = 0
@@ -17,6 +16,7 @@ class Analyzer(ast.NodeVisitor):
         self.ifCount = 0
         self.forCount = 0
         self.tryCount = 0
+        self.listCount = 0
 
     def visit_If(self, node):
         self.ifCount += 1
@@ -44,12 +44,21 @@ class Analyzer(ast.NodeVisitor):
         self.tryCount += 1
         self.generic_visit(node)
 
+    def visit_List(self, node):
+        self.listCount += 1
+        self.generic_visit(node)
+
+    def visit_Tuple(self, node):
+        self.listCount += 1
+        self.generic_visit(node)
+
     def report(self):
         print("Import Count:", self.importCount)
         print("Function Count:", self.functionCount)
-        print("If/Elif Count:", self.ifCount)
-        print("For Count:", self.forCount)
-        print("Try Count:", self.tryCount)
+        print("If/Elif Blocks:", self.ifCount)
+        print("For Loops:", self.forCount)
+        print("Try Catch Blocks:", self.tryCount)
+        print("List/Tuple Count:", self.listCount)
 
 if __name__ == "__main__":
     main()
