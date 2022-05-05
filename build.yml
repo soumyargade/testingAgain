@@ -63,7 +63,7 @@ jobs:
               run: 'sudo apt-get update -y'
             - name: install dependencies
               run: 'sudo apt-get install -y docker.io make golang-go xvfb libgtk-3-0'
-            - name: check version # debugging
+            - name: check version
               run: 'go version'
       steps:
         - name: build docker image
@@ -72,15 +72,18 @@ jobs:
           run: 'cd {{job_loc}} && make prebuild'
         - name: local build
           run: 'cd {{job_loc}} && make'
-        ######################### TEST ##########################
+  ########################## TEST ###########################
+  - name: focalboard-test
+    test:
+      steps:
         - name: server unit tests
-          run: 'cd {{job_loc}} && make server-test'
+          run: 'cd focalboard-build && make server-test'
         - name: web app ESLint
-          run: 'cd {{job_loc}}/webapp/ && npm run check'
+          run: 'cd focalboard-build/webapp/ && npm run check'
         - name: web app unit tests
-          run: 'cd {{job_loc}}/webapp/ && npm run test'
+          run: 'cd focalboard-build/webapp/ && npm run test'
         - name: web app UI tests
-          run: 'cd {{job_loc}}/webapp/ && npm run cypress:ci'
+          run: 'cd focalboard-build/webapp/ && npm run cypress:ci'
   ######################### DEPLOY #########################
   - name: focalboard-deploy
     deploy:
@@ -118,9 +121,12 @@ jobs:
           run: 'cd {{job_loc}} && wger load-online-fixtures'
         #- name: confirm server is up
         #  run: 'cd {{job_loc}} && python manage.py runserver'
-        ######################### TEST ##########################
+  ########################## TEST ###########################
+  - name: wger-test
+    test:
+      steps:
         - name: run entire testing suite
-          run: 'cd {{job_loc}} && python3 manage.py test'
+          run: 'cd wger-build && python3 manage.py test'
   ######################### ANALYSIS #########################
   - name: wger-analysis
     analysis:

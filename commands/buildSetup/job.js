@@ -82,6 +82,24 @@ class DeployStage extends Stage {
     }
 }
 
+class TestStage extends Stage {
+    constructor(obj) {
+        super(obj);
+        let test_steps = new Array();
+        for (const step of obj.steps) {
+            test_steps.push(new Step(step.name, step.run));
+        }
+        this.steps = test_steps;
+    }
+
+    async execute(context, job_loc) {
+        for( let [index, step] of this.steps.entries() ) {
+            console.log(`  [${index + 1}/${this.steps.length}] ${step.name}`);
+            await step.execute(context, job_loc);
+        }
+    }
+}
+
 class AnalysisStage {
     constructor(obj) {
         this.folder = obj.pylint.folder;
@@ -110,11 +128,12 @@ class AnalysisStage {
 }
 
 class Job {
-    constructor(name, repo, build, deploy, analysis) {
+    constructor(name, repo, build, deploy, test, analysis) {
         this.name = name;
         this._build = build;
         this.repo = repo;
         this.job_loc = `${this.name}`;
+        this.test = test;
         this.deploy = deploy;
         this.analysis = analysis;
     }
@@ -126,6 +145,11 @@ class Job {
 
     setDeploy(deploy) {
         this.deploy = new DeployStage(deploy);
+        return this;
+    }
+
+    setTest(test) {
+        this.test = new TestStage(test);
         return this;
     }
 
@@ -154,6 +178,12 @@ class Job {
         await this.deploy.execute(context, this.job_loc);
     }
 
+    async runTests(context) {
+        Env.job_loc = this.job_loc; // Write the folder name to environment variables
+        console.log(`Testing job "${this.name}"...`);
+        await this.test.execute(context, this.job_loc);
+    }
+
     async runAnalysis(context) {
         Env.job_loc = this.job_loc; // Write the folder name to environment variables
         console.log(`Analyzing job "${this.name}"...`);
@@ -166,5 +196,6 @@ module.exports = {
     Stage,
     BuildStage,
     DeployStage,
-    AnalysisStage
+    AnalysisStage,
+    TestStage
 };

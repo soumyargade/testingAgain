@@ -28,6 +28,9 @@ class BuildFactory {
                     case "deploy":
                         j.setDeploy(obj);
                         break;
+                    case "test":
+                        j.setTest(obj);
+                        break;
                     case "analysis":
                         j.setAnalysis(obj);
                         break;
